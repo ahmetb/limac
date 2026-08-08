@@ -12,7 +12,8 @@ This is a first, native-elements version: an `NSStatusItem` with a plain
 - One menu item per instance showing Lima's status verbatim and the
   configured shape (CPUs · memory · disk), with a submenu:
   Start / Stop / Restart, Open Shell (in your preferred terminal),
-  Setup Notes… (Lima's own post-start message), Copy (shell / SSH command),
+  Setup Notes… (Lima's own post-start message), Copy Commands (shell, ssh,
+  scp, rsync, plus the ssh-config and VM directory paths),
   Start at Login (via `limactl autostart`), Force Stop, Factory Reset…, and
   Delete… (disabled for `protect`ed instances). Destructive actions ask
   once. Tooltips show the exact `limactl` command each item runs. While an

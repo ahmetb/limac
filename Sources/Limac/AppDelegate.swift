@@ -254,30 +254,42 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             add("Setup Notes…", #selector(showSetupNotes(_:)), symbol: "doc.text")
         }
 
+        // Everything here is composed from fields limactl reports (name,
+        // sshConfigFile, dir). FILE is a deliberate placeholder to edit.
+        var copyCommands: [(String, String)] = [
+            ("Shell Command", "limactl shell \(name)"),
+        ]
+        var copyPaths: [(String, String)] = []
+        if let sshConfig = instance.sshConfigFile {
+            let host = "lima-\(name)"
+            copyCommands.append(("SSH Command", "ssh -F \"\(sshConfig)\" \(host)"))
+            copyCommands.append(("SCP Command", "scp -F \"\(sshConfig)\" FILE \(host):~/"))
+            copyCommands.append(
+                ("rsync Command", "rsync -av -e \"ssh -F \(sshConfig)\" FILE \(host):~/"))
+            copyPaths.append(("SSH Config Path", sshConfig))
+        }
+        if let dir = instance.dir {
+            copyPaths.append(("VM Directory Path", dir))
+        }
+
         let copyMenu = NSMenu()
         copyMenu.autoenablesItems = false
+        for (index, group) in [copyCommands, copyPaths].enumerated() {
+            if index > 0, !group.isEmpty { copyMenu.addItem(.separator()) }
+            for (title, payload) in group {
+                let item = NSMenuItem(title: title,
+                                      action: #selector(copyPayload(_:)), keyEquivalent: "")
+                item.target = self
+                item.representedObject = payload
+                item.toolTip = payload
+                item.isEnabled = true
+                copyMenu.addItem(item)
+            }
+        }
         let copyParent = NSMenuItem(title: "Copy Commands", action: nil, keyEquivalent: "")
         copyParent.image = Self.symbolImage("doc.on.doc")
         copyParent.isEnabled = true
         copyParent.submenu = copyMenu
-        let shellCommand = "limactl shell \(name)"
-        let shellItem = NSMenuItem(title: "Shell Command",
-                                   action: #selector(copyPayload(_:)), keyEquivalent: "")
-        shellItem.target = self
-        shellItem.representedObject = shellCommand
-        shellItem.toolTip = shellCommand
-        shellItem.isEnabled = true
-        copyMenu.addItem(shellItem)
-        if let sshConfig = instance.sshConfigFile {
-            let sshCommand = "ssh -F \(sshConfig) lima-\(name)"
-            let sshItem = NSMenuItem(title: "SSH Command",
-                                     action: #selector(copyPayload(_:)), keyEquivalent: "")
-            sshItem.target = self
-            sshItem.representedObject = sshCommand
-            sshItem.toolTip = sshCommand
-            sshItem.isEnabled = true
-            copyMenu.addItem(sshItem)
-        }
         submenu.addItem(copyParent)
 
         // Delegated to `limactl autostart` so the CLI and the app never

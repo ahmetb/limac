@@ -8,6 +8,7 @@ struct Instance: Decodable {
     let cpus: Int?
     let memory: Int64?
     let disk: Int64?
+    let dir: String?
     let sshConfigFile: String?
     let protected: Bool?
     let message: String?
