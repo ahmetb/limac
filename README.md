@@ -11,16 +11,19 @@ This is a first, native-elements version: an `NSStatusItem` with a plain
   otherwise.
 - One menu item per instance showing Lima's status verbatim and the
   configured shape (CPUs · memory · disk), with a submenu:
-  Start / Stop / Restart, Open Shell (in Terminal.app), Setup Notes…
-  (Lima's own post-start message), Copy (shell / SSH command), Force Stop,
-  Factory Reset…, and Delete… (disabled for `protect`ed instances).
-  Destructive actions ask once. Tooltips show the exact `limactl` command
-  each item runs.
+  Start / Stop / Restart, Open Shell (in your preferred terminal),
+  Setup Notes… (Lima's own post-start message), Copy (shell / SSH command),
+  Start at Login (via `limactl autostart`), Force Stop, Factory Reset…, and
+  Delete… (disabled for `protect`ed instances). Destructive actions ask
+  once. Tooltips show the exact `limactl` command each item runs. While an
+  operation is in flight the plain transition verbs pause, but the
+  troubleshoot verbs stay available — they're the way out of a hung start.
 - State is pushed by `limactl watch` — a VM started or stopped from a
   terminal updates the menu and icon the same way. No polling loop.
-- A Settings submenu: launch Limac at login, which terminal shells open in
-  (Terminal, iTerm2, or Ghostty), and per-VM start-at-login delegated to
-  `limactl autostart` so the CLI and the app never disagree.
+- A Settings submenu: launch Limac at login, and which terminal shells open
+  in — Ghostty, iTerm2, WezTerm, Alacritty, or Terminal, defaulting to the
+  first of those you have installed. (Warp is not offered: it has no way to
+  open a tab running a given command.)
 
 Product and design docs live in [docs/](docs/).
 

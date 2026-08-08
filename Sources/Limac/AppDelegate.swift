@@ -154,6 +154,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         launch.target = self
         launch.state = LoginItem.isEnabled ? .on : .off
         launch.isEnabled = true
+        launch.image = Self.symbolImage("power")
         launch.toolTip = "Registers the running binary "
             + "(\(LoginItem.executablePath ?? "?")) as a launch agent; "
             + "takes effect at your next login"
@@ -171,47 +172,25 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             item.representedObject = app.rawValue
             item.state = Preferences.terminalApp == app ? .on : .off
             item.isEnabled = app.isInstalled
-            if !app.isInstalled { item.toolTip = "Not installed" }
+            if let url = NSWorkspace.shared
+                .urlForApplication(withBundleIdentifier: app.bundleIdentifier) {
+                let icon = NSWorkspace.shared.icon(forFile: url.path)
+                icon.size = NSSize(width: 16, height: 16)
+                item.image = icon
+            } else {
+                item.toolTip = "Not installed"
+            }
             terminals.addItem(item)
         }
         let terminalsParent = NSMenuItem(title: "Open Shells In", action: nil,
                                          keyEquivalent: "")
+        terminalsParent.image = Self.symbolImage("terminal")
         terminalsParent.submenu = terminals
         terminalsParent.isEnabled = true
         settings.addItem(terminalsParent)
 
-        // Delegated to `limactl autostart` so the CLI and the app never
-        // disagree; the checkmark reflects Lima's own launch agent.
-        if limactlPath != nil, unsupportedVersion == nil {
-            let autostartMenu = NSMenu()
-            autostartMenu.autoenablesItems = false
-            if instances.isEmpty {
-                let none = NSMenuItem(title: "No VMs", action: nil, keyEquivalent: "")
-                none.isEnabled = false
-                autostartMenu.addItem(none)
-            } else {
-                for instance in instances {
-                    let enabled = Autostart.isEnabled(instance.name)
-                    let item = NSMenuItem(title: instance.name,
-                                          action: #selector(toggleAutostart(_:)),
-                                          keyEquivalent: "")
-                    item.target = self
-                    item.representedObject = instance.name
-                    item.state = enabled ? .on : .off
-                    item.toolTip = "limactl autostart "
-                        + "\(enabled ? "disable" : "enable") \(instance.name)"
-                    item.isEnabled = true
-                    autostartMenu.addItem(item)
-                }
-            }
-            let autostartParent = NSMenuItem(title: "Start VMs at Login",
-                                             action: nil, keyEquivalent: "")
-            autostartParent.submenu = autostartMenu
-            autostartParent.isEnabled = true
-            settings.addItem(autostartParent)
-        }
-
         let parent = NSMenuItem(title: "Settings", action: nil, keyEquivalent: "")
+        parent.image = Self.symbolImage("gearshape")
         parent.submenu = settings
         parent.isEnabled = true
         return parent
@@ -239,37 +218,48 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         submenu.autoenablesItems = false
         let idle = busy[name] == nil
 
-        func add(_ title: String, _ action: Selector, tooltip: String? = nil,
-                 enabled: Bool = true) {
+        // Only the plain transition verbs go quiet while an operation is in
+        // flight (double-submit protection). The troubleshoot verbs below
+        // stay live — they're the way out of a hung start, and limactl
+        // itself accepts them in any state (verified: factory-reset works
+        // mid-start; delete refuses with a clear error until Stopped, which
+        // Limac surfaces verbatim).
+        @discardableResult
+        func add(_ title: String, _ action: Selector, symbol: String? = nil,
+                 tooltip: String? = nil, enabled: Bool = true,
+                 disabledWhileBusy: Bool = false) -> NSMenuItem {
             let item = NSMenuItem(title: title, action: action, keyEquivalent: "")
             item.target = self
             item.representedObject = name
             item.toolTip = tooltip
-            item.isEnabled = enabled && idle
+            item.image = symbol.flatMap(Self.symbolImage)
+            item.isEnabled = enabled && (idle || !disabledWhileBusy)
             submenu.addItem(item)
+            return item
         }
 
         if instance.isRunning {
-            add("Open Shell", #selector(openShell(_:)),
+            add("Open Shell", #selector(openShell(_:)), symbol: "terminal",
                 tooltip: "limactl shell \(name)")
-            add("Stop", #selector(stopInstance(_:)),
-                tooltip: "limactl stop \(name)")
-            add("Restart", #selector(restartInstance(_:)),
-                tooltip: "limactl restart \(name)")
+            add("Stop", #selector(stopInstance(_:)), symbol: "stop.fill",
+                tooltip: "limactl stop \(name)", disabledWhileBusy: true)
+            add("Restart", #selector(restartInstance(_:)), symbol: "arrow.clockwise",
+                tooltip: "limactl restart \(name)", disabledWhileBusy: true)
         } else {
-            add("Start", #selector(startInstance(_:)),
-                tooltip: "limactl start \(name)")
+            add("Start", #selector(startInstance(_:)), symbol: "play.fill",
+                tooltip: "limactl start \(name)", disabledWhileBusy: true)
         }
 
         submenu.addItem(.separator())
 
         if let message = instance.message, !message.isEmpty {
-            add("Setup Notes…", #selector(showSetupNotes(_:)))
+            add("Setup Notes…", #selector(showSetupNotes(_:)), symbol: "doc.text")
         }
 
         let copyMenu = NSMenu()
         copyMenu.autoenablesItems = false
         let copyParent = NSMenuItem(title: "Copy", action: nil, keyEquivalent: "")
+        copyParent.image = Self.symbolImage("doc.on.doc")
         copyParent.isEnabled = true
         copyParent.submenu = copyMenu
         let shellCommand = "limactl shell \(name)"
@@ -292,24 +282,37 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         }
         submenu.addItem(copyParent)
 
+        // Delegated to `limactl autostart` so the CLI and the app never
+        // disagree; the checkmark reflects Lima's own launch agent.
+        let autostartOn = Autostart.isEnabled(name)
+        let autostartItem = add(
+            "Start at Login", #selector(toggleAutostart(_:)), symbol: "power",
+            tooltip: "limactl autostart \(autostartOn ? "disable" : "enable") \(name)")
+        autostartItem.state = autostartOn ? .on : .off
+
         submenu.addItem(.separator())
 
         if instance.isRunning {
             add("Force Stop", #selector(forceStopInstance(_:)),
+                symbol: "exclamationmark.octagon",
                 tooltip: "limactl stop -f \(name)")
         }
-        add("Factory Reset…", #selector(factoryResetInstance(_:)),
+        add("Factory Reset…", #selector(factoryResetInstance(_:)), symbol: "eraser",
             tooltip: "limactl factory-reset \(name)")
 
         submenu.addItem(.separator())
 
-        add("Delete…", #selector(deleteInstance(_:)),
+        add("Delete…", #selector(deleteInstance(_:)), symbol: "trash",
             tooltip: instance.isProtected
                 ? "Protected in Lima (limactl protect); unprotect to delete"
                 : "limactl delete \(name)",
             enabled: !instance.isProtected)
 
         return submenu
+    }
+
+    private static func symbolImage(_ name: String) -> NSImage? {
+        NSImage(systemSymbolName: name, accessibilityDescription: nil)
     }
 
     private func dotImage(for status: String) -> NSImage? {

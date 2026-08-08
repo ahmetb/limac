@@ -22,15 +22,23 @@ enum TerminalLauncher {
                 end tell
             end tell
             """)
+        // The remaining terminals have no scripting interface but take the
+        // command to run as process arguments, execed directly — no shell
+        // quoting involved.
         case .ghostty:
-            // Ghostty has no scripting interface; its -e flag execs the
-            // command directly, so no shell quoting is involved.
-            let process = Process()
-            process.executableURL = URL(fileURLWithPath: "/usr/bin/open")
-            process.arguments = ["-na", "Ghostty", "--args",
-                                 "-e", limactlPath, "shell", instanceName]
-            try? process.run()
+            openApp("Ghostty", args: ["-e", limactlPath, "shell", instanceName])
+        case .wezterm:
+            openApp("WezTerm", args: ["start", "--", limactlPath, "shell", instanceName])
+        case .alacritty:
+            openApp("Alacritty", args: ["-e", limactlPath, "shell", instanceName])
         }
+    }
+
+    private static func openApp(_ appName: String, args: [String]) {
+        let process = Process()
+        process.executableURL = URL(fileURLWithPath: "/usr/bin/open")
+        process.arguments = ["-na", appName, "--args"] + args
+        try? process.run()
     }
 
     private static func runAppleScript(_ source: String) {
