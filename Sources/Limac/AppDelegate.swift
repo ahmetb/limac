@@ -425,6 +425,17 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
                 tooltip: "limactl restart \(name)", disabledWhileBusy: true)
             add("Open Shell", #selector(openShell(_:)), symbol: "terminal",
                 tooltip: "limactl shell \(name)")
+            if instance.isKubernetes {
+                // Enabled by the kubeconfig's presence on the host, not by
+                // the Running status — the file appears only once the
+                // cluster's API server is actually reachable.
+                add("Open kubectl Terminal", #selector(openKubectlTerminal(_:)),
+                    symbol: "helm",
+                    tooltip: instance.kubeconfigReady
+                        ? "Terminal with KUBECONFIG set to this cluster"
+                        : "Waiting for the cluster to publish its kubeconfig",
+                    enabled: instance.kubeconfigReady)
+            }
         } else {
             add("Start", #selector(startInstance(_:)), symbol: "play.fill",
                 tooltip: "limactl start \(name)", disabledWhileBusy: true)
@@ -622,6 +633,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     @objc private func openShell(_ sender: NSMenuItem) {
         guard let name = sender.representedObject as? String, let limactlPath else { return }
         TerminalLauncher.openShell(limactlPath: limactlPath, instanceName: name)
+    }
+
+    @objc private func openKubectlTerminal(_ sender: NSMenuItem) {
+        guard let name = sender.representedObject as? String,
+              let path = instances.first(where: { $0.name == name })?.kubeconfigPath
+        else { return }
+        TerminalLauncher.openKubectl(kubeconfigPath: path)
     }
 
     // MARK: - Settings actions

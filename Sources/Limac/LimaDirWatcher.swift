@@ -27,6 +27,16 @@ final class LimaDirWatcher {
         for url in contents
         where (try? url.resourceValues(forKeys: [.isDirectoryKey]))?.isDirectory == true {
             wanted.insert(url.path)
+            // A Kubernetes instance's kubeconfig lands one level deeper, and
+            // only once the cluster is actually up — well after the pid/sock
+            // churn in the instance directory has settled. Watch it so the
+            // kubectl menu action enables itself the moment the file appears.
+            let copied = url.appendingPathComponent("copied-from-guest")
+            var isDirectory: ObjCBool = false
+            if FileManager.default.fileExists(atPath: copied.path, isDirectory: &isDirectory),
+               isDirectory.boolValue {
+                wanted.insert(copied.path)
+            }
         }
 
         for (path, source) in sources where !wanted.contains(path) {

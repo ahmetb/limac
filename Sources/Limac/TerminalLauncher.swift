@@ -1,15 +1,36 @@
 import AppKit
 
-/// Opens `limactl shell <name>` in the user's preferred terminal.
+/// Opens commands in the user's preferred terminal.
 enum TerminalLauncher {
     static func openShell(limactlPath: String, instanceName: String) {
-        let command = "\(shellQuote(limactlPath)) shell \(shellQuote(instanceName))"
+        launch(shellCommand: "\(shellQuote(limactlPath)) shell \(shellQuote(instanceName))",
+               execArgv: [limactlPath, "shell", instanceName])
+    }
+
+    /// Opens a host shell aimed at a Kubernetes instance: KUBECONFIG is
+    /// exported so kubectl and friends target the cluster, and
+    /// `kubectl get nodes` runs first so the window shows right away
+    /// whether the connection works.
+    static func openKubectl(kubeconfigPath: String) {
+        let command = "export KUBECONFIG=\(shellQuote(kubeconfigPath)); kubectl get nodes"
+        // The exec-style terminals below run the argv without a user shell
+        // around it, so wrap in a login shell (kubectl usually lives in
+        // directories GUI apps don't have on PATH) and leave an interactive
+        // shell behind, which inherits the exported KUBECONFIG.
+        let shell = ProcessInfo.processInfo.environment["SHELL"] ?? "/bin/zsh"
+        launch(shellCommand: command,
+               execArgv: [shell, "-l", "-c", "\(command); exec \(shellQuote(shell)) -i"])
+    }
+
+    /// `shellCommand` is typed into the scriptable terminals' new window;
+    /// `execArgv` is execed directly by the rest — no shell quoting involved.
+    private static func launch(shellCommand: String, execArgv: [String]) {
         switch Preferences.terminalApp {
         case .terminal:
             runAppleScript("""
             tell application "Terminal"
                 activate
-                do script "\(appleScriptEscape(command))"
+                do script "\(appleScriptEscape(shellCommand))"
             end tell
             """)
         case .iterm2:
@@ -18,19 +39,16 @@ enum TerminalLauncher {
                 activate
                 set newWindow to (create window with default profile)
                 tell current session of newWindow
-                    write text "\(appleScriptEscape(command))"
+                    write text "\(appleScriptEscape(shellCommand))"
                 end tell
             end tell
             """)
-        // The remaining terminals have no scripting interface but take the
-        // command to run as process arguments, execed directly — no shell
-        // quoting involved.
         case .ghostty:
-            openApp("Ghostty", args: ["-e", limactlPath, "shell", instanceName])
+            openApp("Ghostty", args: ["-e"] + execArgv)
         case .wezterm:
-            openApp("WezTerm", args: ["start", "--", limactlPath, "shell", instanceName])
+            openApp("WezTerm", args: ["start", "--"] + execArgv)
         case .alacritty:
-            openApp("Alacritty", args: ["-e", limactlPath, "shell", instanceName])
+            openApp("Alacritty", args: ["-e"] + execArgv)
         }
     }
 
