@@ -461,6 +461,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
                 ("rsync Command", "rsync -av -e \"ssh -F \(sshConfig)\" FILE \(host):~/"))
             copyPaths.append(("SSH Config Path", sshConfig))
         }
+        if let kubeconfig = instance.kubeconfigPath {
+            copyCommands.append(
+                ("Export KUBECONFIG", "export KUBECONFIG=\"\(kubeconfig)\""))
+            copyCommands.append(
+                ("kubectl Command", "kubectl --kubeconfig \"\(kubeconfig)\" get nodes"))
+            copyPaths.append(("Kubeconfig Path", kubeconfig))
+        }
         if let dir = instance.dir {
             copyPaths.append(("VM Directory Path", dir))
         }
