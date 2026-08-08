@@ -258,7 +258,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
 
         let copyMenu = NSMenu()
         copyMenu.autoenablesItems = false
-        let copyParent = NSMenuItem(title: "Copy", action: nil, keyEquivalent: "")
+        let copyParent = NSMenuItem(title: "Copy Commands", action: nil, keyEquivalent: "")
         copyParent.image = Self.symbolImage("doc.on.doc")
         copyParent.isEnabled = true
         copyParent.submenu = copyMenu
