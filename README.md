@@ -18,6 +18,9 @@ This is a first, native-elements version: an `NSStatusItem` with a plain
   each item runs.
 - State is pushed by `limactl watch` — a VM started or stopped from a
   terminal updates the menu and icon the same way. No polling loop.
+- A Settings submenu: launch Limac at login, which terminal shells open in
+  (Terminal, iTerm2, or Ghostty), and per-VM start-at-login delegated to
+  `limactl autostart` so the CLI and the app never disagree.
 
 Product and design docs live in [docs/](docs/).
 
@@ -39,8 +42,14 @@ The first build takes a minute; then the Limac icon appears at the right end
 of the menu bar. Quit from the menu ("Quit Limac") or with `Ctrl-C` in the
 terminal. Quitting Limac leaves your VMs running — they're Lima's, not ours.
 
+## Notes
+
+"Launch Limac at Login" registers the binary you're currently running (e.g.
+`.build/…/debug/Limac`) as a user launch agent, since `swift run` produces no
+app bundle. If you move or clean the build, toggle it off and on again to
+re-point it. It takes effect at your next login.
+
 ## Not here yet
 
-Settings (launch at login, per-instance autostart, preferred terminal), a
-signed/notarized app bundle, and everything listed under "Deliberately out of
-scope" in [docs/prd.md](docs/prd.md).
+A signed/notarized app bundle, and everything listed under "Deliberately out
+of scope" in [docs/prd.md](docs/prd.md).

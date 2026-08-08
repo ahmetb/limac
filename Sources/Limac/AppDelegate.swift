@@ -137,10 +137,84 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         }
 
         menu.addItem(.separator())
+        menu.addItem(settingsItem())
         let quit = NSMenuItem(title: "Quit Limac", action: #selector(quitApp(_:)),
                               keyEquivalent: "q")
         quit.target = self
         menu.addItem(quit)
+    }
+
+    private func settingsItem() -> NSMenuItem {
+        let settings = NSMenu()
+        settings.autoenablesItems = false
+
+        let launch = NSMenuItem(title: "Launch Limac at Login",
+                                action: #selector(toggleLaunchAtLogin(_:)),
+                                keyEquivalent: "")
+        launch.target = self
+        launch.state = LoginItem.isEnabled ? .on : .off
+        launch.isEnabled = true
+        launch.toolTip = "Registers the running binary "
+            + "(\(LoginItem.executablePath ?? "?")) as a launch agent; "
+            + "takes effect at your next login"
+        settings.addItem(launch)
+
+        settings.addItem(.separator())
+
+        let terminals = NSMenu()
+        terminals.autoenablesItems = false
+        for app in TerminalApp.allCases {
+            let item = NSMenuItem(title: app.rawValue,
+                                  action: #selector(selectTerminal(_:)),
+                                  keyEquivalent: "")
+            item.target = self
+            item.representedObject = app.rawValue
+            item.state = Preferences.terminalApp == app ? .on : .off
+            item.isEnabled = app.isInstalled
+            if !app.isInstalled { item.toolTip = "Not installed" }
+            terminals.addItem(item)
+        }
+        let terminalsParent = NSMenuItem(title: "Open Shells In", action: nil,
+                                         keyEquivalent: "")
+        terminalsParent.submenu = terminals
+        terminalsParent.isEnabled = true
+        settings.addItem(terminalsParent)
+
+        // Delegated to `limactl autostart` so the CLI and the app never
+        // disagree; the checkmark reflects Lima's own launch agent.
+        if limactlPath != nil, unsupportedVersion == nil {
+            let autostartMenu = NSMenu()
+            autostartMenu.autoenablesItems = false
+            if instances.isEmpty {
+                let none = NSMenuItem(title: "No VMs", action: nil, keyEquivalent: "")
+                none.isEnabled = false
+                autostartMenu.addItem(none)
+            } else {
+                for instance in instances {
+                    let enabled = Autostart.isEnabled(instance.name)
+                    let item = NSMenuItem(title: instance.name,
+                                          action: #selector(toggleAutostart(_:)),
+                                          keyEquivalent: "")
+                    item.target = self
+                    item.representedObject = instance.name
+                    item.state = enabled ? .on : .off
+                    item.toolTip = "limactl autostart "
+                        + "\(enabled ? "disable" : "enable") \(instance.name)"
+                    item.isEnabled = true
+                    autostartMenu.addItem(item)
+                }
+            }
+            let autostartParent = NSMenuItem(title: "Start VMs at Login",
+                                             action: nil, keyEquivalent: "")
+            autostartParent.submenu = autostartMenu
+            autostartParent.isEnabled = true
+            settings.addItem(autostartParent)
+        }
+
+        let parent = NSMenuItem(title: "Settings", action: nil, keyEquivalent: "")
+        parent.submenu = settings
+        parent.isEnabled = true
+        return parent
     }
 
     private func instanceItem(for instance: Instance) -> NSMenuItem {
@@ -340,17 +414,47 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
 
     @objc private func openShell(_ sender: NSMenuItem) {
         guard let name = sender.representedObject as? String, let limactlPath else { return }
-        let command = "\(shellQuote(limactlPath)) shell \(shellQuote(name))"
-        let script = """
-        tell application "Terminal"
-            activate
-            do script "\(appleScriptEscape(command))"
-        end tell
-        """
-        let process = Process()
-        process.executableURL = URL(fileURLWithPath: "/usr/bin/osascript")
-        process.arguments = ["-e", script]
-        try? process.run()
+        TerminalLauncher.openShell(limactlPath: limactlPath, instanceName: name)
+    }
+
+    // MARK: - Settings actions
+
+    @objc private func toggleLaunchAtLogin(_ sender: NSMenuItem) {
+        if LoginItem.isEnabled {
+            LoginItem.disable()
+        } else {
+            do {
+                try LoginItem.enable()
+            } catch {
+                NSApp.activate(ignoringOtherApps: true)
+                let alert = NSAlert()
+                alert.alertStyle = .critical
+                alert.messageText = "Couldn't register the login item"
+                alert.informativeText = error.localizedDescription
+                alert.runModal()
+            }
+        }
+        rebuildMenu()
+    }
+
+    @objc private func selectTerminal(_ sender: NSMenuItem) {
+        guard let raw = sender.representedObject as? String,
+              let app = TerminalApp(rawValue: raw) else { return }
+        Preferences.terminalApp = app
+        rebuildMenu()
+    }
+
+    @objc private func toggleAutostart(_ sender: NSMenuItem) {
+        guard let name = sender.representedObject as? String, let limactlPath else { return }
+        let verb = Autostart.isEnabled(name) ? "disable" : "enable"
+        Limactl.run(limactlPath, ["autostart", verb, name]) { [weak self] result in
+            guard let self else { return }
+            if !result.succeeded {
+                self.showError(command: "limactl autostart \(verb) \(name)",
+                               result: result)
+            }
+            self.rebuildMenu()
+        }
     }
 
     @objc private func showSetupNotes(_ sender: NSMenuItem) {
@@ -436,13 +540,4 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         alert.runModal()
     }
 
-    private func shellQuote(_ string: String) -> String {
-        "'" + string.replacingOccurrences(of: "'", with: "'\\''") + "'"
-    }
-
-    private func appleScriptEscape(_ string: String) -> String {
-        string
-            .replacingOccurrences(of: "\\", with: "\\\\")
-            .replacingOccurrences(of: "\"", with: "\\\"")
-    }
 }
