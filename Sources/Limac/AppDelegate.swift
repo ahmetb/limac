@@ -307,6 +307,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
                 ? "Protected in Lima (limactl protect); unprotect to delete"
                 : "limactl delete \(name)",
             enabled: !instance.isProtected)
+        if instance.isProtected {
+            add("Unprotect", #selector(toggleProtection(_:)), symbol: "lock.open",
+                tooltip: "limactl unprotect \(name)")
+        } else {
+            add("Protect from Deletion", #selector(toggleProtection(_:)), symbol: "lock",
+                tooltip: "limactl protect \(name)")
+        }
 
         return submenu
     }
@@ -445,6 +452,19 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
               let app = TerminalApp(rawValue: raw) else { return }
         Preferences.terminalApp = app
         rebuildMenu()
+    }
+
+    @objc private func toggleProtection(_ sender: NSMenuItem) {
+        guard let name = sender.representedObject as? String, let limactlPath,
+              let instance = instances.first(where: { $0.name == name }) else { return }
+        let verb = instance.isProtected ? "unprotect" : "protect"
+        Limactl.run(limactlPath, [verb, name]) { [weak self] result in
+            guard let self else { return }
+            if !result.succeeded {
+                self.showError(command: "limactl \(verb) \(name)", result: result)
+            }
+            self.refresh()
+        }
     }
 
     @objc private func toggleAutostart(_ sender: NSMenuItem) {
