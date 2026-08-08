@@ -5,11 +5,12 @@ Decisions to settle before wireframes. Each comes with a recommendation, so
 
 ## Settled
 
-- **No VM creation or deletion in Limac** (decided 2026-08-07). v1 controls
-  instances you already have: start, stop (with a force-stop fallback),
-  restart, and factory reset for troubleshooting. Making and removing
-  machines stays in the CLI; the app's empty state hands you a copyable
-  `limactl create` command instead.
+- **No VM creation in Limac** (decided 2026-08-07). v1 controls instances
+  you already have: start, stop (with a force-stop fallback), restart,
+  factory reset for troubleshooting — and delete, behind a confirmation
+  that honors Lima's `protect` flag. Making new machines stays in the CLI;
+  the app's empty state hands you a copyable `limactl create` command
+  instead.
 
 ## Open
 

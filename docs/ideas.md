@@ -38,6 +38,9 @@ these is missing, the app has no reason to exist. Everything else is garnish.
 10. **Reuse `limactl autostart`** (cheap). Lima already knows how to start
     instances at login. Delegating means the CLI and the app never disagree
     about what happens at boot.
+11. **Protected instances** (cheap). Lima's `protect` flag exists to prevent
+    accidental deletion. Honor it: Delete is disabled, with a note saying
+    why.
 
 ## Wildcards — fun, undecided
 
@@ -54,11 +57,11 @@ these is missing, the app has no reason to exist. Everything else is garnish.
 
 ## Ideas we should say no to
 
-- **Creating or deleting VMs.** Even a minimal create dialog drags in naming,
-  sizing, template curation, download progress, and failure modes — and a
-  delete button is the one place a slip costs someone a working machine.
-  `limactl` already does both well. (Was in the first PRD draft; cut after
-  discussion on 2026-08-07.)
+- **Creating VMs.** Even a minimal create dialog drags in naming, sizing,
+  template curation, download progress, and failure modes. `limactl create`
+  already does it well. (Was in the first PRD draft; cut after discussion on
+  2026-08-07. Delete stayed in — cleanup is routine, and Lima's `protect`
+  flag plus a confirmation contain the risk.)
 - **Container and image lists.** The moment we show containers we're competing
   with Docker Desktop on its home turf, and the "lean" thesis dies.
 - **Bundling the Lima runtime.** "Just works" is tempting, but then we own

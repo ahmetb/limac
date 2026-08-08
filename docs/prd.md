@@ -70,6 +70,8 @@ disk). Per instance:
 - **Troubleshoot** — for stuck or broken instances: Force stop, Factory
   reset…, Open log. Factory reset wipes the machine back to a fresh state
   while keeping its configuration, so it asks once, plainly.
+- **Delete…** — asks once; disabled for instances marked with Lima's
+  `protect` flag
 
 ### Starting a VM
 
@@ -103,7 +105,7 @@ toggles. Preferred terminal (Terminal, iTerm2, Ghostty, …).
 
 | Not doing | Why |
 |---|---|
-| Creating or deleting VMs | Lifecycle's sharp edges stay in the CLI. Limac flips switches; it never creates or destroys a machine. |
+| Creating VMs | Creation's sharp edges (templates, sizing, downloads) stay in the CLI. Limac manages machines you made; it doesn't make them. |
 | Container / image UI | That's Docker Desktop's turf. We stop at the VM boundary. |
 | Editing `lima.yaml` in-app | Your editor is better at YAML than we are. |
 | Bundling Lima itself | Homebrew installs and updates it better; revisit only if demand is loud. |
@@ -132,7 +134,7 @@ toggles. Preferred terminal (Terminal, iTerm2, Ghostty, …).
 - Snapshot take / restore
 - Disk usage nudge ("ubuntu is using 92 of 100 GB")
 - In-app updates via Sparkle
-- A minimal create / delete flow — only if its absence clearly hurts
+- A minimal create flow — only if its absence clearly hurts
 
 ## Technical grounding (for the wireframe and build phases)
 
