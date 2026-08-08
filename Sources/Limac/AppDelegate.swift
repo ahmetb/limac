@@ -164,21 +164,19 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
 
         let terminals = NSMenu()
         terminals.autoenablesItems = false
-        for app in TerminalApp.allCases {
+        for app in TerminalApp.allCases where app.isInstalled {
             let item = NSMenuItem(title: app.rawValue,
                                   action: #selector(selectTerminal(_:)),
                                   keyEquivalent: "")
             item.target = self
             item.representedObject = app.rawValue
             item.state = Preferences.terminalApp == app ? .on : .off
-            item.isEnabled = app.isInstalled
+            item.isEnabled = true
             if let url = NSWorkspace.shared
                 .urlForApplication(withBundleIdentifier: app.bundleIdentifier) {
                 let icon = NSWorkspace.shared.icon(forFile: url.path)
                 icon.size = NSSize(width: 16, height: 16)
                 item.image = icon
-            } else {
-                item.toolTip = "Not installed"
             }
             terminals.addItem(item)
         }
