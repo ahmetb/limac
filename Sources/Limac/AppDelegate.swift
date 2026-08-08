@@ -253,7 +253,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             }
             terminals.addItem(item)
         }
-        let terminalsParent = NSMenuItem(title: "Preferred Terminal", action: nil,
+        let terminalsParent = NSMenuItem(title: "Terminal Emulator", action: nil,
                                          keyEquivalent: "")
         terminalsParent.image = Self.symbolImage("terminal")
         terminalsParent.submenu = terminals
