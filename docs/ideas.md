@@ -26,8 +26,9 @@ these is missing, the app has no reason to exist. Everything else is garnish.
 5. **Broken-state triage** (medium). When an instance reports Broken, offer
    restart, factory-reset, and open-the-log — a path forward instead of a red
    dot and a shrug.
-6. **Protected instances** (cheap). Lima has a `protect` flag. Honor it:
-   delete is disabled, with a note saying why.
+6. **Stuck-VM escape hatch** (cheap). A graceful stop can hang. After a
+   polite wait, offer Force stop (`limactl stop -f`) instead of an eternal
+   spinner.
 7. **Icon micro-states** (cheap). A subtle animation while anything is
    starting or stopping; an attention badge when something is broken. The icon
    is the app — it should earn its pixels.
@@ -53,6 +54,11 @@ these is missing, the app has no reason to exist. Everything else is garnish.
 
 ## Ideas we should say no to
 
+- **Creating or deleting VMs.** Even a minimal create dialog drags in naming,
+  sizing, template curation, download progress, and failure modes — and a
+  delete button is the one place a slip costs someone a working machine.
+  `limactl` already does both well. (Was in the first PRD draft; cut after
+  discussion on 2026-08-07.)
 - **Container and image lists.** The moment we show containers we're competing
   with Docker Desktop on its home turf, and the "lean" thesis dies.
 - **Bundling the Lima runtime.** "Just works" is tempting, but then we own

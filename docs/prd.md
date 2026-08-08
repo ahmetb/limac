@@ -35,7 +35,7 @@ heard of Lima.
 
 1. **The menu bar is the whole app.** No dock icon, no main window. If a
    feature needs a window to explain itself, it probably doesn't belong in v1.
-   (A small settings pane and a create dialog are the only exceptions.)
+   (A small settings pane is the only exception.)
 2. **Wrap, don't replace.** `limactl` stays the source of truth. A VM started
    from the terminal shows up in Limac; anything Limac does is visible from the
    CLI. Limac never touches Lima's files behind `limactl`'s back.
@@ -67,8 +67,9 @@ disk). Per instance:
 - **Open shell** — opens your terminal running `limactl shell <name>`
 - **Copy** — the shell command or the SSH connection details
 - **Edit config** — opens `lima.yaml` in your editor; Limac doesn't edit YAML
-- **Delete…** — asks once, and refuses entirely for instances marked with
-  Lima's `protect` flag
+- **Troubleshoot** — for stuck or broken instances: Force stop, Factory
+  reset…, Open log. Factory reset wipes the machine back to a fresh state
+  while keeping its configuration, so it asks once, plainly.
 
 ### Starting a VM
 
@@ -78,13 +79,13 @@ driven by Lima's own event stream, and posts a notification when the VM is
 ready — with an **Open shell** button on it. You click start and tab away; the
 machine comes to find you.
 
-### Creating a VM
+### When there are no VMs
 
-One small dialog: pick from a curated shortlist of templates (roughly six of
-Lima's forty-plus: Ubuntu LTS, Docker, Podman, Debian, Fedora, Alpine), name
-it, set CPUs, memory, and disk with steppers, click Create. Every other knob
-belongs to `limactl edit` and `lima.yaml`. Power users are already covered;
-the dialog is for the everyday case.
+Limac doesn't create instances — that stays in the terminal, where Lima's
+templates and flags live. The empty state still helps: a one-line hint, a
+copyable starter command (`limactl create template://docker`), and a link to
+Lima's template catalog. The moment the instance exists, Limac picks it up
+automatically.
 
 ### The one Docker convenience
 
@@ -102,6 +103,7 @@ toggles. Preferred terminal (Terminal, iTerm2, Ghostty, …).
 
 | Not doing | Why |
 |---|---|
+| Creating or deleting VMs | Lifecycle's sharp edges stay in the CLI. Limac flips switches; it never creates or destroys a machine. |
 | Container / image UI | That's Docker Desktop's turf. We stop at the VM boundary. |
 | Editing `lima.yaml` in-app | Your editor is better at YAML than we are. |
 | Bundling Lima itself | Homebrew installs and updates it better; revisit only if demand is loud. |
@@ -130,6 +132,7 @@ toggles. Preferred terminal (Terminal, iTerm2, Ghostty, …).
 - Snapshot take / restore
 - Disk usage nudge ("ubuntu is using 92 of 100 GB")
 - In-app updates via Sparkle
+- A minimal create / delete flow — only if its absence clearly hurts
 
 ## Technical grounding (for the wireframe and build phases)
 
