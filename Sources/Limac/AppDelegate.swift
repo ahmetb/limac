@@ -32,16 +32,21 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             }
         }
 
-        /// True when `limactl list` already reports the state this operation
-        /// was driving toward — proof it's done even if our child process is
-        /// still hanging around (limactl stop has been seen not exiting after
-        /// the VM reached Stopped). start/restart legitimately outlive an
-        /// early "Running" (readiness and provisioning continue), so they
-        /// settle only when the process exits.
-        func isSettled(byStatus status: String) -> Bool {
+        /// True when Lima already reports the state this operation was
+        /// driving toward — proof the VM got there even if our child process
+        /// is still running (limactl stop has been seen not exiting after
+        /// the VM reached Stopped). start settles when the list says Running
+        /// *and* the boot's readiness phase is over: the list flips the
+        /// moment the hostagent is up, while `limactl start` keeps probing
+        /// requirements (ssh, boot scripts) until the hostagent's `running`
+        /// event. restart passes *through* Running on its way down, so it
+        /// can only settle when the process exits; delete settles when the
+        /// instance disappears from the list.
+        func isSettled(byStatus status: String, stillBooting: Bool) -> Bool {
             switch self {
             case .stop, .forceStop, .factoryReset: status == "Stopped"
-            case .start, .restart, .delete: false
+            case .start: status == "Running" && !stillBooting
+            case .restart, .delete: false
             }
         }
     }
@@ -51,6 +56,25 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     /// Instance name → operation in flight. Rows with an entry here show
     /// the operation's label and pause their transition verbs.
     private var busy: [String: Operation] = [:]
+    /// Instances whose current boot has emitted watch events but not yet the
+    /// hostagent's `running` event. `limactl list` flips to Running as soon
+    /// as the hostagent is up — readiness (ssh, boot scripts, forwards) can
+    /// lag by minutes — so a Running row still in here shows "Starting…".
+    /// Empty whenever the watch stream is unavailable, which degrades rows
+    /// back to plain list statuses.
+    private var booting: Set<String> = []
+    /// Instances whose current boot has emitted `running` (degraded or not).
+    private var ready: Set<String> = []
+    /// Subset of `ready` whose latest `running` event was degraded (VM up,
+    /// but file sharing / port forwarding may not work).
+    private var degraded: Set<String> = []
+    /// False until the first `list --json` result lands; see
+    /// `reconcileReadiness`.
+    private var hasListedOnce = false
+    /// Readiness gating only applies while the watch stream is up; without
+    /// it, rows fall back to plain list statuses rather than waiting for
+    /// events that will never come.
+    private var watchAvailable: Bool { watcher?.isAlive ?? false }
     /// Set when the installed Lima is older than what Limac requires.
     private var unsupportedVersion: String?
     private var watcher: LimaWatcher?
@@ -91,8 +115,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
                 self.rebuildMenu()
                 return
             }
-            self.watcher = LimaWatcher(limactlPath: path) { [weak self] in
-                self?.scheduleRefresh()
+            self.watcher = LimaWatcher(limactlPath: path) { [weak self] event in
+                self?.handle(event: event)
             }
             self.watcher?.start()
             self.dirWatcher = LimaDirWatcher { [weak self] in
@@ -100,6 +124,33 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             }
             self.dirWatcher?.sync()
             self.refresh()
+        }
+    }
+
+    /// Folds one watch event into the readiness sets. Every event — decoded
+    /// or not — also pokes the debounced list re-read, which is what redraws
+    /// the menu.
+    private func handle(event: LimaEvent?) {
+        defer { scheduleRefresh() }
+        guard let event else { return }
+        if event.exiting {
+            booting.remove(event.instance)
+            ready.remove(event.instance)
+            degraded.remove(event.instance)
+        } else if event.running {
+            booting.remove(event.instance)
+            ready.insert(event.instance)
+            // Sticky per boot: the hostagent evaluates requirements once, so
+            // degraded can't recover until the next boot — and its routine
+            // port-forward events repeat `running` without the flag.
+            if event.degraded {
+                degraded.insert(event.instance)
+            }
+        } else if !ready.contains(event.instance) {
+            // Boot-phase activity (ssh port, early forwards) before the
+            // `running` event. Once ready, runtime chatter must not drag an
+            // instance back to "Starting…".
+            booting.insert(event.instance)
         }
     }
 
@@ -122,12 +173,37 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         guard unsupportedVersion == nil else { return }
         Limactl.run(limactlPath, ["list", "--json"]) { [weak self] result in
             guard let self, result.succeeded else { return }
+            let previous = self.instances
             self.instances = Instance.parseList(result.stdout)
+            self.reconcileReadiness(previous: previous)
             self.reconcileBusy()
             self.rebuildMenu()
             self.updateIcon()
             self.dirWatcher?.sync()
         }
+    }
+
+    /// Readiness is per boot: an instance the list no longer reports as
+    /// Running starts its next boot un-ready. The reverse transition —
+    /// non-Running to Running — marks a boot as in progress immediately:
+    /// the list flips the moment the hostagent is up, usually before its
+    /// first event reaches us, and without this a fresh boot would briefly
+    /// claim Running (and settle a pending start too early). The first list
+    /// read skips that marking: instances already up when Limac launches get
+    /// their readiness from the `--history` replay instead. `booting` is
+    /// only trimmed to instances that still exist — boot events can precede
+    /// the list flip, and quiet stretches between events are normal.
+    private func reconcileReadiness(previous: [Instance]) {
+        let running = Set(instances.filter(\.isRunning).map(\.name))
+        ready.formIntersection(running)
+        degraded.formIntersection(running)
+        booting.formIntersection(instances.map(\.name))
+        guard watchAvailable, hasListedOnce else {
+            hasListedOnce = true
+            return
+        }
+        let wasRunning = Set(previous.filter(\.isRunning).map(\.name))
+        booting.formUnion(running.subtracting(wasRunning).subtracting(ready))
     }
 
     /// `limactl list` is the source of truth; a busy label is only Limac's
@@ -140,7 +216,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
                 busy[name] = nil
                 continue
             }
-            if operation.isSettled(byStatus: instance.status) {
+            if operation.isSettled(byStatus: instance.status,
+                                   stillBooting: watchAvailable && booting.contains(name)) {
                 busy[name] = nil
             }
         }
@@ -280,11 +357,30 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
 
     private func instanceItem(for instance: Instance) -> NSMenuItem {
         let item = NSMenuItem()
-        item.image = busy[instance.name] != nil
-            ? dotImage(color: .systemOrange, description: "operation in progress")
-            : dotImage(for: instance.status)
-        // Status text is limactl's, verbatim; the shape is configured, not live.
-        let detail = busy[instance.name]?.label ?? instance.statusLine
+        // "Starting…" and "degraded" come from the hostagent's event stream
+        // (limactl watch --json): the list says Running from the moment the
+        // hostagent is up, but readiness — ssh, boot scripts — is only done
+        // at the `running` event, the same moment `limactl start` prints
+        // READY. This covers starts made from a terminal too.
+        let isBooting = watchAvailable && instance.isRunning
+            && booting.contains(instance.name)
+        let isDegraded = instance.isRunning && degraded.contains(instance.name)
+        let detail: String
+        if let operation = busy[instance.name] {
+            item.image = dotImage(color: .systemOrange, description: "operation in progress")
+            detail = operation.label
+        } else if isBooting {
+            item.image = dotImage(color: .systemOrange, description: "starting")
+            detail = "Starting…"
+        } else if isDegraded {
+            item.image = dotImage(color: .systemOrange, description: "running, degraded")
+            detail = "Running (degraded)"
+        } else {
+            item.image = dotImage(for: instance.status)
+            // Status text is limactl's, verbatim; the shape is configured,
+            // not live.
+            detail = instance.statusLine
+        }
         if #available(macOS 14.4, *) {
             item.title = instance.name
             item.subtitle = detail
