@@ -36,16 +36,20 @@ heard of Lima.
 1. **The menu bar is the whole app.** No dock icon, no main window. If a
    feature needs a window to explain itself, it probably doesn't belong in v1.
    (A small settings pane is the only exception.)
-2. **Wrap, don't replace.** `limactl` stays the source of truth. A VM started
-   from the terminal shows up in Limac; anything Limac does is visible from the
-   CLI. Limac never touches Lima's files behind `limactl`'s back.
-3. **Do less, instantly.** The menu opens with current state already in it — no
-   spinner. VM operations take as long as they take; everything around them is
-   immediate.
-4. **No surprises.** Destructive actions ask once. Long actions notify when
-   done. The app is silent otherwise.
+2. **Wrap, don't replace — and never invent.** `limactl` stays the source of
+   truth. A VM started from the terminal shows up in Limac; anything Limac
+   does is visible from the CLI. And the rule cuts deeper than files: if
+   limactl doesn't provide a piece of data or a verb, Limac doesn't show it.
+   No inferred state, no guesses.
+3. **Do less, instantly.** The panel opens with current state already in it —
+   no spinner. VM operations take as long as they take; everything around
+   them is immediate.
+4. **No surprises.** Destructive actions ask once. The app is silent
+   otherwise.
 
 ## The v1 experience
+
+Wireframe-level sketches for everything below live in [design.md](design.md).
 
 ### First run
 
@@ -54,32 +58,38 @@ the whole onboarding. Missing: a single screen pointing at `brew install lima`.
 
 ### The glance
 
-The menu bar icon reflects overall state: something running, everything
-stopped, working (a subtle animation while a VM starts or stops), or needs
-attention (a VM is broken). Most days you get your answer without clicking.
+The menu bar icon has two states: green when at least one VM is running, gray
+when nothing is. Most days that's the whole answer; anything more detailed is
+one click away.
 
-### The menu
+### The panel
 
-Each instance shows a status dot, its name, and its shape (CPUs · memory ·
-disk). Per instance:
+Each instance row shows Lima's status verbatim (Running, Stopped, Broken —
+whatever `limactl list` reports), the name, and the configured shape (CPUs ·
+memory · disk). Per instance:
 
 - **Start / Stop / Restart**
 - **Open shell** — opens your terminal running `limactl shell <name>`
+- **Setup notes** — Lima's own post-start message for this VM
 - **Copy** — the shell command or the SSH connection details
-- **Edit config** — opens `lima.yaml` in your editor; Limac doesn't edit YAML
-- **Troubleshoot** — for stuck or broken instances: Force stop, Factory
-  reset…, Open log. Factory reset wipes the machine back to a fresh state
-  while keeping its configuration, so it asks once, plainly.
+- **Troubleshoot** — Force stop, Factory reset… Factory reset wipes the
+  machine back to a fresh state while keeping its configuration, so it asks
+  once, plainly.
 - **Delete…** — asks once; disabled for instances marked with Lima's
   `protect` flag
 
-### Starting a VM
+While an operation runs, the row shows a spinner; the new status arrives
+through Lima's event stream. No progress bars or time estimates — Lima
+reports status transitions, not progress, so Limac doesn't guess. A VM
+started or stopped from a terminal updates the panel exactly the same way.
 
-A start takes anywhere from thirty seconds to a couple of minutes. Limac shows
-the live phase in the menu (pulling image → booting → provisioning → ready),
-driven by Lima's own event stream, and posts a notification when the VM is
-ready — with an **Open shell** button on it. You click start and tab away; the
-machine comes to find you.
+### Setup notes (the Docker story)
+
+Lima templates ship a `message` that Lima renders with real paths — the same
+text `limactl start` prints. For docker VMs that's the exact
+`docker context create …` commands. Limac shows it with a copy button, for
+any VM whose template provides one. Running Docker is the most common reason
+a Mac runs Lima, and this covers it with zero detection logic of our own.
 
 ### When there are no VMs
 
@@ -89,17 +99,11 @@ copyable starter command (`limactl create template://docker`), and a link to
 Lima's template catalog. The moment the instance exists, Limac picks it up
 automatically.
 
-### The one Docker convenience
-
-Running Docker is the single most common reason a Mac runs Lima. For
-docker-template VMs, one menu item sets up the Docker context (or copies the
-`DOCKER_HOST` export). That's the whole integration.
-
 ### Settings
 
 Launch Limac at login. Per-instance start-at-login, delegated to
-`limactl autostart` so the CLI and the app never disagree. Notification
-toggles. Preferred terminal (Terminal, iTerm2, Ghostty, …).
+`limactl autostart` so the CLI and the app never disagree. Preferred terminal
+(Terminal, iTerm2, Ghostty, …). Nothing else.
 
 ## Deliberately out of scope for v1
 
@@ -107,18 +111,20 @@ toggles. Preferred terminal (Terminal, iTerm2, Ghostty, …).
 |---|---|
 | Creating VMs | Creation's sharp edges (templates, sizing, downloads) stay in the CLI. Limac manages machines you made; it doesn't make them. |
 | Container / image UI | That's Docker Desktop's turf. We stop at the VM boundary. |
-| Editing `lima.yaml` in-app | Your editor is better at YAML than we are. |
+| Notifications | Lima has no notification feature, and reacting to event-stream changes would ping you about other people's terminal actions. |
+| Boot progress bars and time estimates | Lima reports status transitions, not progress. Anything more would be invented. |
+| Live usage stats and battery impact | limactl exposes configured CPU/memory/disk only. The day Lima grows usage or power data, we adopt it. |
+| Editing `lima.yaml` (in-app or via `limactl edit`) | Punted to v2. |
+| Log viewer | limactl has no logs command; nothing to wrap. |
 | Bundling Lima itself | Homebrew installs and updates it better; revisit only if demand is loud. |
 | Kubernetes anything | Different product. |
-| Log viewer | An "open log file" menu item; Console.app does the rest. |
-| Resource graphs and metrics | Glanceable is not the same as a dashboard. |
 | Lima networking (vmnet, tunnels) | Needs sudo, serves few; CLI territory. |
 | Snapshots, clone, extra disks | Real features, wrong release. Candidates for later. |
 | Windows / Linux ports | It's a Mac menu bar app. |
 
 ## What quality means here
 
-- The menu opens instantly and is never stale: state is pushed by
+- The panel opens instantly and is never stale: state is pushed by
   `limactl watch` events, not polled on a timer.
 - The daily loop — glance, start, shell, stop — needs zero terminal commands.
 - The idle footprint disappears: near-zero CPU, small memory, no daemon of our
@@ -128,17 +134,19 @@ toggles. Preferred terminal (Terminal, iTerm2, Ghostty, …).
 
 ## After v1 (candidates, unranked)
 
+- Edit config via `limactl edit`
 - Port-forward list per instance (the event stream already carries this)
-- Global hotkey to open the menu
+- Global hotkey to open the panel
 - "Open in VS Code" via Remote-SSH and Lima's generated SSH config
-- Snapshot take / restore
-- Disk usage nudge ("ubuntu is using 92 of 100 GB")
+- Snapshot take / restore (`limactl snapshot`)
+- Live usage and battery-impact display — if and when Lima exposes the data
 - In-app updates via Sparkle
 - A minimal create flow — only if its absence clearly hurts
 
 ## Technical grounding (for the wireframe and build phases)
 
-- Swift + SwiftUI `MenuBarExtra`, macOS 14+.
+- Swift + SwiftUI `MenuBarExtra` (window style — a custom panel, not a native
+  NSMenu), macOS 14+.
 - State comes from `limactl list --json`; live updates from `limactl watch`,
   which streams status changes and port-forward events. No polling loop.
 - Every action shells out to `limactl`. Limac links nothing from Lima and never

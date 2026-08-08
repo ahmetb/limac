@@ -5,9 +5,10 @@ through `limactl`. Think Docker Desktop's menu bar presence, minus the weight.
 
 Read in order:
 
-1. [prd.md](prd.md) — what we're building and why; the proposed v1 scope
-2. [ideas.md](ideas.md) — the wider brainstorm the PRD was cut from
-3. [open-questions.md](open-questions.md) — decisions to settle before wireframes
+1. [prd.md](prd.md) — what we're building and why; the settled v1 scope
+2. [design.md](design.md) — ASCII wireframes and the feature map tying every
+   UI element to its limactl source
+3. [ideas.md](ideas.md) — the wider brainstorm the PRD was cut from
+4. [open-questions.md](open-questions.md) — what's settled, what's still open
 
-Status: drafts for discussion (August 2026). Nothing is locked; the point of
-these docs is to argue with them.
+Status: drafts for discussion (August 2026). Next stage: real wireframing.
