@@ -423,13 +423,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
                 tooltip: "limactl stop \(name)", disabledWhileBusy: true)
             add("Restart", #selector(restartInstance(_:)), symbol: "arrow.clockwise",
                 tooltip: "limactl restart \(name)", disabledWhileBusy: true)
-            add("Open Shell", #selector(openShell(_:)), symbol: "terminal",
+            add("Launch Shell", #selector(openShell(_:)), symbol: "terminal",
                 tooltip: "limactl shell \(name)")
             if instance.isKubernetes {
                 // Enabled by the kubeconfig's presence on the host, not by
                 // the Running status — the file appears only once the
                 // cluster's API server is actually reachable.
-                add("Open kubectl Terminal", #selector(openKubectlTerminal(_:)),
+                add("Launch kubectl", #selector(openKubectlTerminal(_:)),
                     symbol: "helm",
                     tooltip: instance.kubeconfigReady
                         ? "Terminal with KUBECONFIG set to this cluster"
