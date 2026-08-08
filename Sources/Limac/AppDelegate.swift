@@ -6,11 +6,51 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     private var statusItem: NSStatusItem!
     private let menu = NSMenu()
 
+    /// A limactl verb Limac itself launched and is still waiting on.
+    private enum Operation {
+        case start, stop, forceStop, restart, factoryReset, delete
+
+        var label: String {
+            switch self {
+            case .start: "Starting…"
+            case .stop: "Stopping…"
+            case .forceStop: "Force stopping…"
+            case .restart: "Restarting…"
+            case .factoryReset: "Factory resetting…"
+            case .delete: "Deleting…"
+            }
+        }
+
+        func arguments(for name: String) -> [String] {
+            switch self {
+            case .start: ["start", name]
+            case .stop: ["stop", name]
+            case .forceStop: ["stop", "-f", name]
+            case .restart: ["restart", name]
+            case .factoryReset: ["factory-reset", name]
+            case .delete: ["delete", name]
+            }
+        }
+
+        /// True when `limactl list` already reports the state this operation
+        /// was driving toward — proof it's done even if our child process is
+        /// still hanging around (limactl stop has been seen not exiting after
+        /// the VM reached Stopped). start/restart legitimately outlive an
+        /// early "Running" (readiness and provisioning continue), so they
+        /// settle only when the process exits.
+        func isSettled(byStatus status: String) -> Bool {
+            switch self {
+            case .stop, .forceStop, .factoryReset: status == "Stopped"
+            case .start, .restart, .delete: false
+            }
+        }
+    }
+
     private var limactlPath: String?
     private var instances: [Instance] = []
-    /// Instance name → in-flight verb label ("Starting…"). Rows with an
-    /// entry here show the label and disable their actions.
-    private var busy: [String: String] = [:]
+    /// Instance name → operation in flight. Rows with an entry here show
+    /// the operation's label and pause their transition verbs.
+    private var busy: [String: Operation] = [:]
     /// Set when the installed Lima is older than what Limac requires.
     private var unsupportedVersion: String?
     private var watcher: LimaWatcher?
@@ -74,8 +114,25 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         Limactl.run(limactlPath, ["list", "--json"]) { [weak self] result in
             guard let self, result.succeeded else { return }
             self.instances = Instance.parseList(result.stdout)
+            self.reconcileBusy()
             self.rebuildMenu()
             self.updateIcon()
+        }
+    }
+
+    /// `limactl list` is the source of truth; a busy label is only Limac's
+    /// promise that a command is still working. The moment the list shows
+    /// the operation's target state (or the instance is gone), the label
+    /// drops — the app must never contradict the CLI.
+    private func reconcileBusy() {
+        for (name, operation) in busy {
+            guard let instance = instances.first(where: { $0.name == name }) else {
+                busy[name] = nil
+                continue
+            }
+            if operation.isSettled(byStatus: instance.status) {
+                busy[name] = nil
+            }
         }
     }
 
@@ -209,7 +266,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             ? dotImage(color: .systemOrange, description: "operation in progress")
             : dotImage(for: instance.status)
         // Status text is limactl's, verbatim; the shape is configured, not live.
-        let detail = busy[instance.name] ?? instance.statusLine
+        let detail = busy[instance.name]?.label ?? instance.statusLine
         if #available(macOS 14.4, *) {
             item.title = instance.name
             item.subtitle = detail
@@ -388,22 +445,22 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
 
     @objc private func startInstance(_ sender: NSMenuItem) {
         guard let name = sender.representedObject as? String else { return }
-        perform(["start", name], busyLabel: "Starting…", on: name)
+        perform(.start, on: name)
     }
 
     @objc private func stopInstance(_ sender: NSMenuItem) {
         guard let name = sender.representedObject as? String else { return }
-        perform(["stop", name], busyLabel: "Stopping…", on: name)
+        perform(.stop, on: name)
     }
 
     @objc private func restartInstance(_ sender: NSMenuItem) {
         guard let name = sender.representedObject as? String else { return }
-        perform(["restart", name], busyLabel: "Restarting…", on: name)
+        perform(.restart, on: name)
     }
 
     @objc private func forceStopInstance(_ sender: NSMenuItem) {
         guard let name = sender.representedObject as? String else { return }
-        perform(["stop", "-f", name], busyLabel: "Force stopping…", on: name)
+        perform(.forceStop, on: name)
     }
 
     @objc private func factoryResetInstance(_ sender: NSMenuItem) {
@@ -414,7 +471,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
                 + "a fresh state while keeping its configuration.",
             confirmTitle: "Factory Reset")
         guard confirmed(alert) else { return }
-        perform(["factory-reset", name], busyLabel: "Factory resetting…", on: name)
+        perform(.factoryReset, on: name)
     }
 
     @objc private func deleteInstance(_ sender: NSMenuItem) {
@@ -427,14 +484,15 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
                 + "This can't be undone.",
             confirmTitle: "Delete")
         guard confirmed(alert) else { return }
-        perform(["delete", name], busyLabel: "Deleting…", on: name)
+        perform(.delete, on: name)
     }
 
-    private func perform(_ arguments: [String], busyLabel: String, on name: String) {
+    private func perform(_ operation: Operation, on name: String) {
         guard let limactlPath else { return }
-        busy[name] = busyLabel
+        busy[name] = operation
         rebuildMenu()
         updateIcon()
+        let arguments = operation.arguments(for: name)
         Limactl.run(limactlPath, arguments) { [weak self] result in
             guard let self else { return }
             self.busy[name] = nil
