@@ -524,7 +524,24 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     }
 
     @objc private func quitApp(_ sender: NSMenuItem) {
-        // Quit leaves VMs running — they're Lima's, not ours.
+        // Quit leaves VMs running — they're Lima's, not ours — but say so,
+        // in case the user assumed quitting the app stops them.
+        let running = instances.filter(\.isRunning)
+        if !running.isEmpty {
+            let names = running.map(\.name).joined(separator: ", ")
+            NSApp.activate(ignoringOtherApps: true)
+            let alert = NSAlert()
+            alert.alertStyle = .informational
+            alert.messageText = running.count == 1
+                ? "“\(names)” is still running"
+                : "\(running.count) VMs are still running"
+            alert.informativeText = "Quitting Limac doesn't stop your Lima VMs — "
+                + "\(names) will keep running in the background. "
+                + "Stop them from Limac or with `limactl stop`."
+            alert.addButton(withTitle: "Quit Anyway")
+            alert.addButton(withTitle: "Cancel")
+            guard alert.runModal() == .alertFirstButtonReturn else { return }
+        }
         NSApp.terminate(nil)
     }
 
