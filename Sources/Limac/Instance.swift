@@ -47,9 +47,11 @@ struct Instance: Decodable {
     }
 
     /// "Running · 8 CPU · 12 GB · 100 GB" — configured shape, not live usage
-    /// (limactl doesn't provide usage).
+    /// (limactl doesn't provide usage). Kubernetes instances get a marker
+    /// after the status so the cluster actions are discoverable.
     var statusLine: String {
         var parts = [status.isEmpty ? "Unknown" : status]
+        if isKubernetes { parts.append("Kubernetes") }
         if let cpus { parts.append("\(cpus) CPU") }
         if let memory { parts.append(Self.formatBytes(memory)) }
         if let disk { parts.append(Self.formatBytes(disk)) }
