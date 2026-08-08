@@ -92,8 +92,17 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
 
     private func updateIcon() {
         guard let button = statusItem.button else { return }
-        let anyRunning = instances.contains { $0.isRunning }
-        if anyRunning {
+        // Orange only while a Limac-initiated command is in flight — that's
+        // our own knowledge, not an inferred VM state. limactl reports no
+        // transitional status, so CLI-driven changes go straight gray↔green.
+        if !busy.isEmpty {
+            let config = NSImage.SymbolConfiguration(paletteColors: [.systemOrange])
+            let image = NSImage(systemSymbolName: "circle.fill",
+                                accessibilityDescription: "Limac: an operation is in progress")?
+                .withSymbolConfiguration(config)
+            image?.isTemplate = false
+            button.image = image
+        } else if instances.contains(where: { $0.isRunning }) {
             let config = NSImage.SymbolConfiguration(paletteColors: [.systemGreen])
             let image = NSImage(systemSymbolName: "circle.fill",
                                 accessibilityDescription: "Limac: a VM is running")?
@@ -196,7 +205,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
 
     private func instanceItem(for instance: Instance) -> NSMenuItem {
         let item = NSMenuItem()
-        item.image = dotImage(for: instance.status)
+        item.image = busy[instance.name] != nil
+            ? dotImage(color: .systemOrange, description: "operation in progress")
+            : dotImage(for: instance.status)
         // Status text is limactl's, verbatim; the shape is configured, not live.
         let detail = busy[instance.name] ?? instance.statusLine
         if #available(macOS 14.4, *) {
@@ -336,9 +347,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         case "Broken": color = .systemOrange
         default: color = .tertiaryLabelColor
         }
+        return dotImage(color: color, description: status)
+    }
+
+    private func dotImage(color: NSColor, description: String) -> NSImage? {
         let config = NSImage.SymbolConfiguration(pointSize: 9, weight: .regular)
             .applying(.init(paletteColors: [color]))
-        let image = NSImage(systemSymbolName: "circle.fill", accessibilityDescription: status)?
+        let image = NSImage(systemSymbolName: "circle.fill",
+                            accessibilityDescription: description)?
             .withSymbolConfiguration(config)
         image?.isTemplate = false
         return image
@@ -418,9 +434,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         guard let limactlPath else { return }
         busy[name] = busyLabel
         rebuildMenu()
+        updateIcon()
         Limactl.run(limactlPath, arguments) { [weak self] result in
             guard let self else { return }
             self.busy[name] = nil
+            self.updateIcon()
             if !result.succeeded {
                 self.showError(command: "limactl \(arguments.joined(separator: " "))",
                                result: result)

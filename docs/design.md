@@ -26,6 +26,7 @@ Every feature names its limactl source:
 |---|---|
 | Instance rows (name, status, shape, ssh) | `list --json` fields, verbatim |
 | Icon: green / gray | any instance `status == "Running"` |
+| Icon: orange | a Limac-initiated `limactl` command in flight |
 | Start / Stop / Restart | `start`, `stop`, `restart` |
 | Force Stop | `stop -f` |
 | Factory Reset… | `factory-reset` |
@@ -41,13 +42,17 @@ which terminal app to open shells in. That's the entire settings surface.
 
 Punted to v2: Edit Config (`limactl edit`).
 
-## A. Menu bar icon — two states
+## A. Menu bar icon — three states
 
 ```
 ●  green: at least one VM is Running        ○  gray: nothing running
+●  orange: a Limac-initiated operation is in flight
 ```
 
-No animation states, no badges. The panel carries the detail.
+Orange reflects only Limac's own in-flight `limactl` command — our own
+knowledge, not an inferred VM state. limactl reports no transitional
+status, so CLI-driven changes go straight gray↔green. No animation
+states, no badges. The panel carries the detail.
 
 ## B. The panel — a typical day
 

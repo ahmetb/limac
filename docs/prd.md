@@ -58,9 +58,10 @@ the whole onboarding. Missing: a single screen pointing at `brew install lima`.
 
 ### The glance
 
-The menu bar icon has two states: green when at least one VM is running, gray
-when nothing is. Most days that's the whole answer; anything more detailed is
-one click away.
+The menu bar icon has two resting states: green when at least one VM is
+running, gray when nothing is — plus orange while an operation Limac itself
+started is still in flight. Most days that's the whole answer; anything more
+detailed is one click away.
 
 ### The panel
 
