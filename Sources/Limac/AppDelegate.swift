@@ -54,6 +54,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     /// Set when the installed Lima is older than what Limac requires.
     private var unsupportedVersion: String?
     private var watcher: LimaWatcher?
+    private var dirWatcher: LimaDirWatcher?
     private var refreshScheduled = false
 
     func applicationDidFinishLaunching(_ notification: Notification) {
@@ -68,6 +69,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
 
     func applicationWillTerminate(_ notification: Notification) {
         watcher?.stop()
+        dirWatcher?.stop()
     }
 
     // MARK: - State
@@ -90,6 +92,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
                 self?.scheduleRefresh()
             }
             self.watcher?.start()
+            self.dirWatcher = LimaDirWatcher { [weak self] in
+                self?.scheduleRefresh()
+            }
+            self.dirWatcher?.sync()
             self.refresh()
         }
     }
@@ -117,6 +123,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             self.reconcileBusy()
             self.rebuildMenu()
             self.updateIcon()
+            self.dirWatcher?.sync()
         }
     }
 
