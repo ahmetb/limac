@@ -306,7 +306,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
                 : "limactl delete \(name)",
             enabled: !instance.isProtected)
         if instance.isProtected {
-            add("Unprotect", #selector(toggleProtection(_:)), symbol: "lock.open",
+            add("Lift Delete Protection", #selector(toggleProtection(_:)), symbol: "lock.open",
                 tooltip: "limactl unprotect \(name)")
         } else {
             add("Protect from Deletion", #selector(toggleProtection(_:)), symbol: "lock",
