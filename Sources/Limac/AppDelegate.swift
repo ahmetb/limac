@@ -56,6 +56,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     private var watcher: LimaWatcher?
     private var dirWatcher: LimaDirWatcher?
     private var refreshScheduled = false
+    /// Cycles LimeIcon.frames while `busy` is non-empty; nil otherwise.
+    private var iconAnimation: Timer?
+    private var iconFrame = 0
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
@@ -156,29 +159,37 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
 
     private func updateIcon() {
         guard let button = statusItem.button else { return }
-        // Orange only while a Limac-initiated command is in flight — that's
+        // Animated only while a Limac-initiated command is in flight — that's
         // our own knowledge, not an inferred VM state. limactl reports no
-        // transitional status, so CLI-driven changes go straight gray↔green.
+        // transitional status, so CLI-driven changes go straight empty↔full.
         if !busy.isEmpty {
-            let config = NSImage.SymbolConfiguration(paletteColors: [.systemOrange])
-            let image = NSImage(systemSymbolName: "circle.fill",
-                                accessibilityDescription: "Limac: an operation is in progress")?
-                .withSymbolConfiguration(config)
-            image?.isTemplate = false
-            button.image = image
-        } else if instances.contains(where: { $0.isRunning }) {
-            let config = NSImage.SymbolConfiguration(paletteColors: [.systemGreen])
-            let image = NSImage(systemSymbolName: "circle.fill",
-                                accessibilityDescription: "Limac: a VM is running")?
-                .withSymbolConfiguration(config)
-            image?.isTemplate = false
-            button.image = image
+            startIconAnimation()
         } else {
-            let image = NSImage(systemSymbolName: "circle",
-                                accessibilityDescription: "Limac: no VMs running")
-            image?.isTemplate = true
-            button.image = image
+            stopIconAnimation()
+            button.image = instances.contains(where: { $0.isRunning })
+                ? LimeIcon.full
+                : LimeIcon.empty
         }
+    }
+
+    private func startIconAnimation() {
+        guard iconAnimation == nil else { return }
+        iconFrame = 0
+        statusItem.button?.image = LimeIcon.frames[0]
+        let timer = Timer(timeInterval: LimeIcon.frameInterval, repeats: true) { [weak self] _ in
+            guard let self else { return }
+            self.iconFrame = (self.iconFrame + 1) % LimeIcon.frames.count
+            self.statusItem.button?.image = LimeIcon.frames[self.iconFrame]
+        }
+        // .common keeps the wave moving while the menu is open (menu tracking
+        // runs the run loop outside the default mode).
+        RunLoop.main.add(timer, forMode: .common)
+        iconAnimation = timer
+    }
+
+    private func stopIconAnimation() {
+        iconAnimation?.invalidate()
+        iconAnimation = nil
     }
 
     // MARK: - Menu building

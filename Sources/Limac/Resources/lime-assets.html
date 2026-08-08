@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lime slice — final assets</title>
+<style>
+  :root{--bg:#fafaf7; --ink:#1c1e18; --muted:#6b6e63; --hair:#e5e5dd; --card:#fff;
+        --lime:#6f9a1f; --bar-light:#f2f2ef; --bar-dark:#161616}
+  *{box-sizing:border-box; margin:0; padding:0}
+  body{background:var(--bg); color:var(--ink);
+       font:15px/1.55 -apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",sans-serif;
+       -webkit-font-smoothing:antialiased; padding:44px 24px 80px}
+  .wrap{max-width:900px; margin:0 auto}
+  .eyebrow{font:600 11px/1 ui-monospace,"SF Mono",Menlo,monospace; letter-spacing:.14em;
+           text-transform:uppercase; color:var(--lime); margin-bottom:10px}
+  h1{font:600 28px/1.2 -apple-system,BlinkMacSystemFont,"SF Pro Display",sans-serif; letter-spacing:-.02em}
+  .lede{color:var(--muted); margin-top:8px; max-width:62ch}
+  .params{font:500 12px/1.6 ui-monospace,"SF Mono",Menlo,monospace; color:var(--lime); margin-top:10px}
+  .grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(270px,1fr)); gap:14px; margin-top:32px}
+  .card{background:var(--card); border:1px solid var(--hair); border-radius:14px; padding:18px;
+        display:flex; flex-direction:column; gap:12px}
+  .card h2{font-size:15px; font-weight:600}
+  .card p{font-size:12.5px; color:var(--muted)}
+  .stage{height:150px; display:flex; align-items:center; justify-content:center; border-radius:10px;
+    background:linear-gradient(45deg,#f6f6f2 25%,transparent 25%,transparent 75%,#f6f6f2 75%),
+               linear-gradient(45deg,#f6f6f2 25%,#fdfdfb 25%,#fdfdfb 75%,#f6f6f2 75%);
+    background-size:16px 16px; background-position:0 0,8px 8px; color:var(--ink)}
+  .stage svg{width:110px; height:110px}
+  .menubar{display:flex; align-items:center; justify-content:flex-end; gap:14px; height:30px;
+           padding:0 12px; border-radius:8px; border:1px solid var(--hair)}
+  .menubar.light{background:var(--bar-light); color:#111}
+  .menubar.dark{background:var(--bar-dark); color:#f4f4f4; border-color:#000; margin-top:6px}
+  .menubar svg{width:16px; height:16px; display:block}
+  .menubar .clock{font:500 11.5px/1 -apple-system,sans-serif; opacity:.9}
+  .btns{display:flex; gap:8px}
+  button{font:500 12px/1 -apple-system,sans-serif; color:var(--ink); background:#f1f1ec;
+         border:1px solid var(--hair); border-radius:7px; padding:7px 12px; cursor:pointer}
+  button:hover{background:#e9e9e2}
+  button:focus-visible{outline:2px solid var(--lime); outline-offset:2px}
+  button.done{color:var(--lime); border-color:var(--lime)}
+  details{border-top:1px solid var(--hair); padding-top:10px}
+  summary{font:500 12px/1 -apple-system,sans-serif; color:var(--muted); cursor:pointer}
+  pre{margin-top:10px; padding:12px; background:#f7f7f3; border:1px solid var(--hair); border-radius:8px;
+      font:10.5px/1.5 ui-monospace,"SF Mono",Menlo,monospace; overflow:auto; max-height:340px; color:#3a3d33}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="eyebrow">final assets</div>
+  <h1>Lime slice — asset set.</h1>
+  <p class="lede">Three production SVGs generated from your chosen parameters. Every file carries the
+  full parameter documentation and construction notes as inline comments, so the geometry is
+  reproducible from the file alone.</p>
+  <p class="params">rind 1.5 · gap 0.9 · cut 0.5 · flesh 6.95 (back gap 0.75) · fillet 0.6 · off 0.18 · all segments congruent (60° rotations)</p>
+  <div class="grid" id="cards"></div>
+</div>
+
+<script type="application/json" id="assets">{"full": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" width=\"16\" height=\"16\" fill=\"currentColor\">\n<!-- ============================================================\n  LIME SLICE - macOS menu bar template icon (24x24 viewBox)\n  Monochrome: everything uses currentColor; export black-on-transparent\n  and set isTemplate on the NSImage so macOS handles light/dark tinting.\n\n  PARAMETERS (all in viewBox units) and how each is applied:\n    R      = 10    fixed outer radius of the icon. The rind is stroked on a\n                   path of radius R - rind/2 so its OUTER edge lands exactly\n                   on R regardless of thickness.\n    rind   = 1.5   width of the single continuous outline stroke (flat cut\n                   line + curved skin are ONE closed path -> corners always\n                   connect, round line joins).\n    gap    = 0.9   width of the two divider channels between flesh segments.\n    cut    = 0.5   clearance between the flesh and the straight cut edge.\n                   It also positions the whole fan: the fan center sits at\n                   FY = 7 + rind/2 + cut - gap/2 = 7.8  (rind hub is y=7).\n                   Smaller cut slides all flesh toward the cut line.\n    flesh  = 6.95  outer radius of the segment arcs, centered on (12, FY).\n                   Resulting back gap to the skin:\n                   (R - rind) - (FY - 7) - flesh = 0.75\n    fillet = 0.6   corner rounding. Each segment path below is drawn INSET\n                   by this amount, then re-fattened by its own same-color\n                   round-join stroke of width 2*fillet = 1.2. Round joins\n                   become exact tangent arcs at the tip (guitar-pick nose)\n                   and both back corners, while edges land back on the true\n                   boundaries -- so all documented gaps stay exact.\n\n  CONSTRUCTION: the cut line counts as a divider. Every flesh edge is offset\n  gap/2 (+ fillet) from a ray at 0/60/120/180 deg through (12, FY), so the\n  three segments are CONGRUENT: exact 60-degree rotations of one shape.\n  Everything is drawn flat-edge-up, then tilted:\n  transform = translate(2.34 2.34) rotate(-45 12 12)   (rotate first, then\n  translate re-centers the tilted shape in the 24x24 box).\n\n  STATE API: each flesh path reads its opacity from a CSS custom property\n  --p1 / --p2 / --p3 (default shown below). Set them on the <svg> or any\n  ancestor: 1 = lit, 0.18 = off. p1 = segment nearest the top corner after\n  the tilt, p2 = middle, p3 = bottom.\n============================================================ -->\n<!-- VARIANT: FULL - all segments lit (override with --p1..--p3) -->\n  <g transform=\"translate(2.34 2.34) rotate(-45 12 12)\" fill=\"currentColor\">\n    <!-- rind: one closed path (cut line + skin), stroked, never filled -->\n    <path fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.5\" stroke-linejoin=\"round\" d=\"M2.75 7 L21.25 7 A9.25 9.25 0 0 1 2.75 7 Z\"/>\n    <!-- flesh p1: top segment (nearest the corner where cut line meets the skin) -->\n    <path style=\"opacity:var(--p1,1)\" stroke=\"currentColor\" stroke-width=\"1.2\" stroke-linejoin=\"round\" d=\"M13.82 8.85 L18.26 8.85 A6.35 6.35 0 0 1 16.04 12.7 Z\"/>\n    <!-- flesh p2: middle segment -->\n    <path style=\"opacity:var(--p2,1)\" stroke=\"currentColor\" stroke-width=\"1.2\" stroke-linejoin=\"round\" d=\"M12 9.9 L14.22 13.75 A6.35 6.35 0 0 1 9.78 13.75 Z\"/>\n    <!-- flesh p3: bottom segment -->\n    <path style=\"opacity:var(--p3,1)\" stroke=\"currentColor\" stroke-width=\"1.2\" stroke-linejoin=\"round\" d=\"M10.18 8.85 L7.96 12.7 A6.35 6.35 0 0 1 5.74 8.85 Z\"/>\n  <\/g>\n<\/svg>\n", "empty": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" width=\"16\" height=\"16\" fill=\"currentColor\">\n<!-- ============================================================\n  LIME SLICE - macOS menu bar template icon (24x24 viewBox)\n  Monochrome: everything uses currentColor; export black-on-transparent\n  and set isTemplate on the NSImage so macOS handles light/dark tinting.\n\n  PARAMETERS (all in viewBox units) and how each is applied:\n    R      = 10    fixed outer radius of the icon. The rind is stroked on a\n                   path of radius R - rind/2 so its OUTER edge lands exactly\n                   on R regardless of thickness.\n    rind   = 1.5   width of the single continuous outline stroke (flat cut\n                   line + curved skin are ONE closed path -> corners always\n                   connect, round line joins).\n    gap    = 0.9   width of the two divider channels between flesh segments.\n    cut    = 0.5   clearance between the flesh and the straight cut edge.\n                   It also positions the whole fan: the fan center sits at\n                   FY = 7 + rind/2 + cut - gap/2 = 7.8  (rind hub is y=7).\n                   Smaller cut slides all flesh toward the cut line.\n    flesh  = 6.95  outer radius of the segment arcs, centered on (12, FY).\n                   Resulting back gap to the skin:\n                   (R - rind) - (FY - 7) - flesh = 0.75\n    fillet = 0.6   corner rounding. Each segment path below is drawn INSET\n                   by this amount, then re-fattened by its own same-color\n                   round-join stroke of width 2*fillet = 1.2. Round joins\n                   become exact tangent arcs at the tip (guitar-pick nose)\n                   and both back corners, while edges land back on the true\n                   boundaries -- so all documented gaps stay exact.\n\n  CONSTRUCTION: the cut line counts as a divider. Every flesh edge is offset\n  gap/2 (+ fillet) from a ray at 0/60/120/180 deg through (12, FY), so the\n  three segments are CONGRUENT: exact 60-degree rotations of one shape.\n  Everything is drawn flat-edge-up, then tilted:\n  transform = translate(2.34 2.34) rotate(-45 12 12)   (rotate first, then\n  translate re-centers the tilted shape in the 24x24 box).\n\n  STATE API: each flesh path reads its opacity from a CSS custom property\n  --p1 / --p2 / --p3 (default shown below). Set them on the <svg> or any\n  ancestor: 1 = lit, 0.18 = off. p1 = segment nearest the top corner after\n  the tilt, p2 = middle, p3 = bottom.\n============================================================ -->\n<!-- VARIANT: EMPTY - all segments at off-opacity 0.18 (override with --p1..--p3) -->\n  <g transform=\"translate(2.34 2.34) rotate(-45 12 12)\" fill=\"currentColor\">\n    <!-- rind: one closed path (cut line + skin), stroked, never filled -->\n    <path fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.5\" stroke-linejoin=\"round\" d=\"M2.75 7 L21.25 7 A9.25 9.25 0 0 1 2.75 7 Z\"/>\n    <!-- flesh p1: top segment (nearest the corner where cut line meets the skin) -->\n    <path style=\"opacity:var(--p1,0.18)\" stroke=\"currentColor\" stroke-width=\"1.2\" stroke-linejoin=\"round\" d=\"M13.82 8.85 L18.26 8.85 A6.35 6.35 0 0 1 16.04 12.7 Z\"/>\n    <!-- flesh p2: middle segment -->\n    <path style=\"opacity:var(--p2,0.18)\" stroke=\"currentColor\" stroke-width=\"1.2\" stroke-linejoin=\"round\" d=\"M12 9.9 L14.22 13.75 A6.35 6.35 0 0 1 9.78 13.75 Z\"/>\n    <!-- flesh p3: bottom segment -->\n    <path style=\"opacity:var(--p3,0.18)\" stroke=\"currentColor\" stroke-width=\"1.2\" stroke-linejoin=\"round\" d=\"M10.18 8.85 L7.96 12.7 A6.35 6.35 0 0 1 5.74 8.85 Z\"/>\n  <\/g>\n<\/svg>\n", "anim": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" width=\"16\" height=\"16\" fill=\"currentColor\">\n<!-- ============================================================\n  LIME SLICE - macOS menu bar template icon (24x24 viewBox)\n  Monochrome: everything uses currentColor; export black-on-transparent\n  and set isTemplate on the NSImage so macOS handles light/dark tinting.\n\n  PARAMETERS (all in viewBox units) and how each is applied:\n    R      = 10    fixed outer radius of the icon. The rind is stroked on a\n                   path of radius R - rind/2 so its OUTER edge lands exactly\n                   on R regardless of thickness.\n    rind   = 1.5   width of the single continuous outline stroke (flat cut\n                   line + curved skin are ONE closed path -> corners always\n                   connect, round line joins).\n    gap    = 0.9   width of the two divider channels between flesh segments.\n    cut    = 0.5   clearance between the flesh and the straight cut edge.\n                   It also positions the whole fan: the fan center sits at\n                   FY = 7 + rind/2 + cut - gap/2 = 7.8  (rind hub is y=7).\n                   Smaller cut slides all flesh toward the cut line.\n    flesh  = 6.95  outer radius of the segment arcs, centered on (12, FY).\n                   Resulting back gap to the skin:\n                   (R - rind) - (FY - 7) - flesh = 0.75\n    fillet = 0.6   corner rounding. Each segment path below is drawn INSET\n                   by this amount, then re-fattened by its own same-color\n                   round-join stroke of width 2*fillet = 1.2. Round joins\n                   become exact tangent arcs at the tip (guitar-pick nose)\n                   and both back corners, while edges land back on the true\n                   boundaries -- so all documented gaps stay exact.\n\n  CONSTRUCTION: the cut line counts as a divider. Every flesh edge is offset\n  gap/2 (+ fillet) from a ray at 0/60/120/180 deg through (12, FY), so the\n  three segments are CONGRUENT: exact 60-degree rotations of one shape.\n  Everything is drawn flat-edge-up, then tilted:\n  transform = translate(2.34 2.34) rotate(-45 12 12)   (rotate first, then\n  translate re-centers the tilted shape in the 24x24 box).\n\n  STATE API: each flesh path reads its opacity from a CSS custom property\n  --p1 / --p2 / --p3 (default shown below). Set them on the <svg> or any\n  ancestor: 1 = lit, 0.18 = off. p1 = segment nearest the top corner after\n  the tilt, p2 = middle, p3 = bottom.\n============================================================ -->\n<!-- VARIANT: ANIMATED - self-contained CSS wave (see step table in <style>).\n     For native ports: drive per-segment opacity through the same step table. -->\n  <style>\n    /* 12-step wave, 420 ms per step (total 5.04s), step-end = hold\n       each state then jump. Step table: 0, 1, 1+2, 1+2+3, 2+3, 3, 0, 3, 2+3, 1+2+3, 1+2, 1, loop. */\n    .lw1,.lw2,.lw3{animation-duration:5.04s; animation-iteration-count:infinite; animation-timing-function:step-end}\n    .lw1{animation-name:lime-w1} .lw2{animation-name:lime-w2} .lw3{animation-name:lime-w3}\n    @keyframes lime-w1{0%{opacity:0.18} 8.33%{opacity:1} 16.67%{opacity:1} 25%{opacity:1} 33.33%{opacity:0.18} 41.67%{opacity:0.18} 50%{opacity:0.18} 58.33%{opacity:0.18} 66.67%{opacity:0.18} 75%{opacity:1} 83.33%{opacity:1} 91.67%{opacity:1} 100%{opacity:0.18}}\n    @keyframes lime-w2{0%{opacity:0.18} 8.33%{opacity:0.18} 16.67%{opacity:1} 25%{opacity:1} 33.33%{opacity:1} 41.67%{opacity:0.18} 50%{opacity:0.18} 58.33%{opacity:0.18} 66.67%{opacity:1} 75%{opacity:1} 83.33%{opacity:1} 91.67%{opacity:0.18} 100%{opacity:0.18}}\n    @keyframes lime-w3{0%{opacity:0.18} 8.33%{opacity:0.18} 16.67%{opacity:0.18} 25%{opacity:1} 33.33%{opacity:1} 41.67%{opacity:1} 50%{opacity:0.18} 58.33%{opacity:1} 66.67%{opacity:1} 75%{opacity:1} 83.33%{opacity:0.18} 91.67%{opacity:0.18} 100%{opacity:0.18}}\n    @media (prefers-reduced-motion: reduce){.lw1,.lw2,.lw3{animation:none}}\n  <\/style>\n  <g transform=\"translate(2.34 2.34) rotate(-45 12 12)\" fill=\"currentColor\">\n    <!-- rind: one closed path (cut line + skin), stroked, never filled -->\n    <path fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.5\" stroke-linejoin=\"round\" d=\"M2.75 7 L21.25 7 A9.25 9.25 0 0 1 2.75 7 Z\"/>\n    <!-- flesh p1 -->\n    <path class=\"lw1\" style=\"opacity:0.18\" stroke=\"currentColor\" stroke-width=\"1.2\" stroke-linejoin=\"round\" d=\"M13.82 8.85 L18.26 8.85 A6.35 6.35 0 0 1 16.04 12.7 Z\"/>\n    <!-- flesh p2 -->\n    <path class=\"lw2\" style=\"opacity:0.18\" stroke=\"currentColor\" stroke-width=\"1.2\" stroke-linejoin=\"round\" d=\"M12 9.9 L14.22 13.75 A6.35 6.35 0 0 1 9.78 13.75 Z\"/>\n    <!-- flesh p3 -->\n    <path class=\"lw3\" style=\"opacity:0.18\" stroke=\"currentColor\" stroke-width=\"1.2\" stroke-linejoin=\"round\" d=\"M10.18 8.85 L7.96 12.7 A6.35 6.35 0 0 1 5.74 8.85 Z\"/>\n  <\/g>\n<\/svg>\n"}</script>
+<script>
+const A = JSON.parse(document.getElementById('assets').textContent);
+const CARDS = [["full", "Full", "All three segments lit. Segment opacity still overridable via --p1\u2026--p3."], ["empty", "Empty", "All segments resting at 0.18. Same paths, same override API."], ["anim", "Animated", "Self-contained CSS wave: 0 \u2192 1 \u2192 1+2 \u2192 1+2+3 \u2192 2+3 \u2192 3 \u2192 0 \u2192 3 \u2192 \u2026 (step table documented inside the file)."]];
+const FILES = { full:'lime-full.svg', empty:'lime-empty.svg', anim:'lime-animated.svg' };
+
+document.getElementById('cards').innerHTML = CARDS.map(([k, name, blurb]) => `
+  <div class="card">
+    <h2>${name}</h2>
+    <p>${blurb}</p>
+    <div class="stage">${A[k]}</div>
+    <div>
+      <div class="menubar light">${A[k]}
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="width:14px;height:14px"><path d="M3 9.5a13.5 13.5 0 0 1 18 0"/><path d="M6.5 13a8.5 8.5 0 0 1 11 0"/><path d="M9.8 16.4a4 4 0 0 1 4.4 0"/><circle cx="12" cy="19.4" r="1" fill="currentColor" stroke="none"/></svg>
+        <span class="clock">Sat 9:41 AM</span></div>
+      <div class="menubar dark">${A[k]}
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="width:14px;height:14px"><path d="M3 9.5a13.5 13.5 0 0 1 18 0"/><path d="M6.5 13a8.5 8.5 0 0 1 11 0"/><path d="M9.8 16.4a4 4 0 0 1 4.4 0"/><circle cx="12" cy="19.4" r="1" fill="currentColor" stroke="none"/></svg>
+        <span class="clock">Sat 9:41 AM</span></div>
+    </div>
+    <div class="btns">
+      <button data-copy="${k}">Copy SVG</button>
+      <button data-dl="${k}">Download</button>
+    </div>
+    <details><summary>view source (with inline docs)</summary><pre>${A[k].replace(/&/g,'&amp;').replace(/</g,'&lt;')}</pre></details>
+  </div>`).join('');
+
+document.querySelectorAll('[data-copy]').forEach(b => b.addEventListener('click', async () => {
+  try { await navigator.clipboard.writeText(A[b.dataset.copy]); }
+  catch { const t=document.createElement('textarea'); t.value=A[b.dataset.copy];
+          document.body.appendChild(t); t.select(); document.execCommand('copy'); t.remove(); }
+  b.textContent='Copied'; b.classList.add('done');
+  setTimeout(()=>{ b.textContent='Copy SVG'; b.classList.remove('done'); },1400);
+}));
+document.querySelectorAll('[data-dl]').forEach(b => b.addEventListener('click', () => {
+  const blob = new Blob([A[b.dataset.dl]], {type:'image/svg+xml'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob); a.download = FILES[b.dataset.dl];
+  a.click(); URL.revokeObjectURL(a.href);
+}));
+</script>
+</body>
+</html>

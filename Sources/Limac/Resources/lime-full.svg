@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+<!-- ============================================================
+  LIME SLICE - macOS menu bar template icon (24x24 viewBox)
+  Monochrome: everything uses currentColor; export black-on-transparent
+  and set isTemplate on the NSImage so macOS handles light/dark tinting.
+
+  PARAMETERS (all in viewBox units) and how each is applied:
+    R      = 10    fixed outer radius of the icon. The rind is stroked on a
+                   path of radius R - rind/2 so its OUTER edge lands exactly
+                   on R regardless of thickness.
+    rind   = 1.5   width of the single continuous outline stroke (flat cut
+                   line + curved skin are ONE closed path -> corners always
+                   connect, round line joins).
+    gap    = 0.9   width of the two divider channels between flesh segments.
+    cut    = 0.5   clearance between the flesh and the straight cut edge.
+                   It also positions the whole fan: the fan center sits at
+                   FY = 7 + rind/2 + cut - gap/2 = 7.8  (rind hub is y=7).
+                   Smaller cut slides all flesh toward the cut line.
+    flesh  = 6.95  outer radius of the segment arcs, centered on (12, FY).
+                   Resulting back gap to the skin:
+                   (R - rind) - (FY - 7) - flesh = 0.75
+    fillet = 0.6   corner rounding. Each segment path below is drawn INSET
+                   by this amount, then re-fattened by its own same-color
+                   round-join stroke of width 2*fillet = 1.2. Round joins
+                   become exact tangent arcs at the tip (guitar-pick nose)
+                   and both back corners, while edges land back on the true
+                   boundaries -- so all documented gaps stay exact.
+
+  CONSTRUCTION: the cut line counts as a divider. Every flesh edge is offset
+  gap/2 (+ fillet) from a ray at 0/60/120/180 deg through (12, FY), so the
+  three segments are CONGRUENT: exact 60-degree rotations of one shape.
+  Everything is drawn flat-edge-up, then tilted:
+  transform = translate(2.34 2.34) rotate(-45 12 12)   (rotate first, then
+  translate re-centers the tilted shape in the 24x24 box).
+
+  STATE API: each flesh path reads its opacity from a CSS custom property
+  --p1 / --p2 / --p3 (default shown below). Set them on the <svg> or any
+  ancestor: 1 = lit, 0.18 = off. p1 = segment nearest the top corner after
+  the tilt, p2 = middle, p3 = bottom.
+============================================================ -->
+<!-- VARIANT: FULL - all segments lit (override with --p1..--p3) -->
+  <g transform="translate(2.34 2.34) rotate(-45 12 12)" fill="currentColor">
+    <!-- rind: one closed path (cut line + skin), stroked, never filled -->
+    <path fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" d="M2.75 7 L21.25 7 A9.25 9.25 0 0 1 2.75 7 Z"/>
+    <!-- flesh p1: top segment (nearest the corner where cut line meets the skin) -->
+    <path style="opacity:var(--p1,1)" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round" d="M13.82 8.85 L18.26 8.85 A6.35 6.35 0 0 1 16.04 12.7 Z"/>
+    <!-- flesh p2: middle segment -->
+    <path style="opacity:var(--p2,1)" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round" d="M12 9.9 L14.22 13.75 A6.35 6.35 0 0 1 9.78 13.75 Z"/>
+    <!-- flesh p3: bottom segment -->
+    <path style="opacity:var(--p3,1)" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round" d="M10.18 8.85 L7.96 12.7 A6.35 6.35 0 0 1 5.74 8.85 Z"/>
+  </g>
+</svg>
