@@ -305,13 +305,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
                 ? "Protected in Lima (limactl protect); unprotect to delete"
                 : "limactl delete \(name)",
             enabled: !instance.isProtected)
-        if instance.isProtected {
-            add("Lift Delete Protection", #selector(toggleProtection(_:)), symbol: "lock.open",
-                tooltip: "limactl unprotect \(name)")
-        } else {
-            add("Protect from Deletion", #selector(toggleProtection(_:)), symbol: "lock",
-                tooltip: "limactl protect \(name)")
-        }
+        let protectItem = add(
+            "Protect from Deletion", #selector(toggleProtection(_:)), symbol: "lock",
+            tooltip: "limactl \(instance.isProtected ? "unprotect" : "protect") \(name)")
+        protectItem.state = instance.isProtected ? .on : .off
 
         return submenu
     }
