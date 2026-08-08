@@ -463,7 +463,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         }
         if let kubeconfig = instance.kubeconfigPath {
             copyCommands.append(
-                ("Export KUBECONFIG", "export KUBECONFIG=\"\(kubeconfig)\""))
+                ("KUBECONFIG env var", "export KUBECONFIG=\"\(kubeconfig)\""))
             copyCommands.append(
                 ("kubectl Command", "kubectl --kubeconfig \"\(kubeconfig)\" get nodes"))
             copyPaths.append(("Kubeconfig Path", kubeconfig))
