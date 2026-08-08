@@ -239,12 +239,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         }
 
         if instance.isRunning {
-            add("Open Shell", #selector(openShell(_:)), symbol: "terminal",
-                tooltip: "limactl shell \(name)")
             add("Stop", #selector(stopInstance(_:)), symbol: "stop.fill",
                 tooltip: "limactl stop \(name)", disabledWhileBusy: true)
             add("Restart", #selector(restartInstance(_:)), symbol: "arrow.clockwise",
                 tooltip: "limactl restart \(name)", disabledWhileBusy: true)
+            add("Open Shell", #selector(openShell(_:)), symbol: "terminal",
+                tooltip: "limactl shell \(name)")
         } else {
             add("Start", #selector(startInstance(_:)), symbol: "play.fill",
                 tooltip: "limactl start \(name)", disabledWhileBusy: true)
