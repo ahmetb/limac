@@ -141,7 +141,6 @@ Launch Limac at login. Per-instance start-at-login, delegated to
 - "Open in VS Code" via Remote-SSH and Lima's generated SSH config
 - Snapshot take / restore (`limactl snapshot`)
 - Live usage and battery-impact display — if and when Lima exposes the data
-- In-app updates via Sparkle
 - A minimal create flow — only if its absence clearly hurts
 
 ## Technical grounding (for the wireframe and build phases)
@@ -153,4 +152,6 @@ Launch Limac at login. Per-instance start-at-login, delegated to
 - Every action shells out to `limactl`. Limac links nothing from Lima and never
   bypasses it.
 - Requires Lima ≥ 2.0 on the PATH (Homebrew). Friendly version gate at startup.
-- Signed and notarized; distributed as a GitHub release plus a Homebrew cask.
+- Distributed as a GitHub release plus a Homebrew cask; ad-hoc signed for
+  now (no Developer ID), with in-app updates via Sparkle — see
+  [updates.md](updates.md).

@@ -1,0 +1,30 @@
+name: Build
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  build:
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build (debug, the `swift run` dev flow)
+        run: swift build
+
+      - name: Package app bundle
+        run: ./scripts/make-app.sh 0.0.0
+
+      - name: Verify bundle
+        run: |
+          test -d dist/Limac.app/Contents/Frameworks/Sparkle.framework || {
+            echo "::error::Sparkle.framework not embedded in app bundle"
+            exit 1
+          }
+          codesign --verify --deep --strict dist/Limac.app
+          lipo -archs dist/Limac.app/Contents/MacOS/Limac | grep -q 'x86_64 arm64\|arm64 x86_64' || {
+            echo "::error::binary is not universal"
+            exit 1
+          }

@@ -1,0 +1,104 @@
+name: Release
+
+# Pushing a v* tag builds Limac.app, publishes a GitHub release, and then
+# commits the regenerated appcast.xml + Homebrew cask to main. The release
+# is published before the commit-back so the appcast never advertises an
+# asset that doesn't exist yet.
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: macos-15
+    env:
+      TAG: ${{ github.ref_name }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Extract version from tag
+        id: v
+        run: echo "version=${TAG#v}" >> "$GITHUB_OUTPUT"
+
+      - name: Build and package Limac.app
+        run: ./scripts/make-app.sh "${{ steps.v.outputs.version }}"
+
+      - name: Archive
+        # zip -y preserves the framework's version symlinks.
+        run: cd dist && zip -r -y "Limac-${TAG}.zip" Limac.app
+
+      - name: Sign update (Sparkle EdDSA)
+        id: sign
+        env:
+          SPARKLE_ED_PRIVATE_KEY: ${{ secrets.SPARKLE_ED_PRIVATE_KEY }}
+        run: |
+          if [ -z "${SPARKLE_ED_PRIVATE_KEY}" ]; then
+            echo "::error::SPARKLE_ED_PRIVATE_KEY secret is not set. Ad-hoc signed apps have no other trust anchor: shipping an unsigned enclosure would strand every installed updater."
+            exit 1
+          fi
+          # sign_update ships inside Sparkle's SPM artifact — checksum-pinned
+          # via Package.resolved and version-matched to the embedded framework.
+          SIGN_UPDATE=.build/artifacts/sparkle/Sparkle/bin/sign_update
+          ATTRS=$(echo "$SPARKLE_ED_PRIVATE_KEY" | "$SIGN_UPDATE" --ed-key-file - "dist/Limac-${TAG}.zip")
+          echo "enclosure_attrs=$ATTRS" >> "$GITHUB_OUTPUT"
+
+      - name: Publish GitHub release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/Limac-${{ github.ref_name }}.zip
+          generate_release_notes: true
+          body: |
+            **Install:** `brew tap ahmetb/limac https://github.com/ahmetb/limac && brew install --cask limac`, or download the zip below.
+
+            Limac is not signed with an Apple Developer ID certificate. On first launch of a manually downloaded copy, right-click the app and choose Open (on macOS 15+, additionally approve it under System Settings → Privacy & Security). In-app updates installed by Sparkle do not re-trigger this warning.
+
+            The app checks for updates daily and can install them in place; Homebrew installs stay on the same train (`auto_updates`).
+
+      - name: Update appcast and cask on main
+        env:
+          VERSION: ${{ steps.v.outputs.version }}
+          ENCLOSURE_ATTRS: ${{ steps.sign.outputs.enclosure_attrs }}
+        run: |
+          SHA256=$(shasum -a 256 "dist/Limac-${TAG}.zip" | cut -d' ' -f1)
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git fetch origin main
+          git checkout -B main origin/main
+          PUBDATE=$(LC_ALL=C date -u +"%a, %d %b %Y %H:%M:%S +0000")
+          cat > appcast.xml <<EOF
+          <?xml version="1.0" encoding="utf-8"?>
+          <rss version="2.0" xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle">
+            <channel>
+              <title>Limac</title>
+              <link>https://github.com/ahmetb/limac</link>
+              <description>Most recent Limac release</description>
+              <language>en</language>
+              <item>
+                <title>Limac ${VERSION}</title>
+                <link>https://github.com/ahmetb/limac/releases/tag/${TAG}</link>
+                <sparkle:fullReleaseNotesLink>https://github.com/ahmetb/limac/releases/tag/${TAG}</sparkle:fullReleaseNotesLink>
+                <sparkle:version>${VERSION}</sparkle:version>
+                <sparkle:shortVersionString>${VERSION}</sparkle:shortVersionString>
+                <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
+                <pubDate>${PUBDATE}</pubDate>
+                <enclosure
+                  url="https://github.com/ahmetb/limac/releases/download/${TAG}/Limac-${TAG}.zip"
+                  ${ENCLOSURE_ATTRS}
+                  type="application/octet-stream"/>
+              </item>
+            </channel>
+          </rss>
+          EOF
+          xmllint --noout appcast.xml
+          sed -i '' \
+            -e "s|^  version .*|  version \"${VERSION}\"|" \
+            -e "s|^  sha256 .*|  sha256 \"${SHA256}\"|" \
+            Casks/limac.rb
+          git add appcast.xml Casks/limac.rb
+          git commit -m "Update appcast and Homebrew cask to ${VERSION}"
+          git push origin main

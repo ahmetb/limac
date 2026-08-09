@@ -1,10 +1,23 @@
 import AppKit
+import Sparkle
 
 /// The menu bar is the whole app: an NSStatusItem with a plain NSMenu.
 /// State comes from `limactl list --json`; freshness from `limactl watch`.
 final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     private var statusItem: NSStatusItem!
     private let menu = NSMenu()
+
+    /// nil when running as a bare executable (`swift run`): Sparkle needs a
+    /// real .app bundle — SUFeedURL/SUPublicEDKey live in Info.plist and the
+    /// installer replaces a bundle, not a bare binary. Eager (not lazy) when
+    /// bundled, so the scheduled daily check starts at launch rather than on
+    /// first menu open.
+    private let updaterController: SPUStandardUpdaterController? =
+        Bundle.main.bundleIdentifier == nil
+            ? nil
+            : SPUStandardUpdaterController(startingUpdater: true,
+                                           updaterDelegate: nil,
+                                           userDriverDelegate: nil)
 
     /// A limactl verb Limac itself launched and is still waiting on.
     private enum Operation {
@@ -299,6 +312,18 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
 
         menu.addItem(.separator())
         menu.addItem(settingsItem())
+        if let updaterController {
+            let update = NSMenuItem(
+                title: "Check for Updates…",
+                action: #selector(SPUStandardUpdaterController.checkForUpdates(_:)),
+                keyEquivalent: "")
+            update.target = updaterController
+            update.image = Self.symbolImage("arrow.triangle.2.circlepath")
+            // The menu doesn't autoenable, so mirror what Sparkle's
+            // validateMenuItem would decide (off mid-check).
+            update.isEnabled = updaterController.updater.canCheckForUpdates
+            menu.addItem(update)
+        }
         let quit = NSMenuItem(title: "Quit Limac", action: #selector(quitApp(_:)),
                               keyEquivalent: "q")
         quit.target = self
@@ -308,6 +333,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     private func settingsItem() -> NSMenuItem {
         let settings = NSMenu()
         settings.autoenablesItems = false
+
+        // Which build am I running? Only the packaged app knows (the version
+        // is stamped into Info.plist by scripts/make-app.sh).
+        if let version = Bundle.main
+            .object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String {
+            addDisabled("Limac \(version)", to: settings)
+            settings.addItem(.separator())
+        }
 
         let launch = NSMenuItem(title: "Launch Limac at Login",
                                 action: #selector(toggleLaunchAtLogin(_:)),

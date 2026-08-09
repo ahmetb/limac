@@ -21,18 +21,22 @@ recommendation, so "no objection" is a valid answer.
   buttons and designed empty states beat maximum menu-nativeness. Row
   actions deserve more prominence than a hidden overflow menu — exact
   treatment to be decided in wireframing. Quit leaves VMs running.
+- **App updates: Sparkle in-app updates plus a Homebrew cask** (2026-08-09,
+  reversing the earlier cask-only recommendation). Replicates the release
+  pipeline proven in [Iris](https://github.com/ahmetb/Iris): a tag-triggered
+  workflow EdDSA-signs the zip and publishes a one-item appcast; the cask
+  sets `auto_updates true` so brew and Sparkle don't fight. Sparkle is a
+  deliberate exception to the limactl-only rule: that rule governs what
+  Limac shows about *Lima*, not how the app maintains itself. Details in
+  [updates.md](updates.md).
 
 ## Open
 
 1. **Minimum macOS version?** 14 gets us modern `MenuBarExtra` behavior; 13
    widens reach a little. **Recommendation:** 14+.
 
-2. **App updates:** Homebrew cask only, or Sparkle in-app updates too?
-   **Recommendation:** cask only for v1. Our audience has Homebrew by
-   definition (that's how Lima got there).
-
-3. **Naming and icon.** Is "Limac" final? The menu bar glyph is effectively
+2. **Naming and icon.** Is "Limac" final? The menu bar glyph is effectively
    the entire brand surface — worth real design time early.
 
-4. **Telemetry.** **Recommendation:** none, and say so in the README as a
+3. **Telemetry.** **Recommendation:** none, and say so in the README as a
    feature.

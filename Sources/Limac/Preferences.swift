@@ -33,7 +33,11 @@ enum TerminalApp: String, CaseIterable {
 /// surface Limac keeps for itself (see docs/design.md).
 enum Preferences {
     // An explicit suite because a bare `swift run` executable has no bundle
-    // identifier for UserDefaults.standard to key off.
+    // identifier for UserDefaults.standard to key off. In the packaged app
+    // the bundle identifier IS dev.limac, so this initializer returns nil
+    // (suite == own bundle id is disallowed) and the .standard fallback
+    // lands on the same ~/Library/Preferences/dev.limac.plist — both run
+    // modes share one settings store. Don't "fix" the fallback.
     private static let defaults = UserDefaults(suiteName: "dev.limac") ?? .standard
     private static let terminalKey = "terminalApp"
 

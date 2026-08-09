@@ -38,17 +38,30 @@ yourself.
 
 ## Installation
 
-There is no packaged release yet; build from source. You need macOS 14 or
-later, a Swift toolchain (Xcode 15 or the Command Line Tools), and Lima 2.0
-or later on your `PATH` (`brew install lima`).
+You need macOS 14 or later and Lima 2.0 or later on your `PATH`
+(`brew install lima`).
+
+```sh
+brew tap ahmetb/limac https://github.com/ahmetb/limac
+brew install --cask limac
+```
+
+Or grab `Limac-vX.Y.Z.zip` from the
+[releases page](https://github.com/ahmetb/limac/releases). The app is not
+signed with an Apple Developer ID certificate, so if macOS blocks the first
+launch, right-click Limac.app and choose Open (on macOS 15 or newer, also
+approve it under System Settings → Privacy & Security). The app checks for
+updates daily and installs them in place; those updates don't re-trigger
+the warning.
+
+To build from source instead, install a Swift toolchain (Xcode 15 or the
+Command Line Tools) and:
 
 ```sh
 git clone https://github.com/ahmetb/limac
 cd limac
 swift run
 ```
-
-A signed app bundle and a Homebrew cask will follow.
 
 ## Scope
 

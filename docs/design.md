@@ -170,4 +170,5 @@ states, no badges. The panel carries the detail.
 ```
 
 No notification settings (there are no notifications). No update settings
-(Homebrew's job).
+either — the packaged app checks daily via Sparkle on its own and the menu
+gets a single "Check for Updates…" item (see [updates.md](updates.md)).

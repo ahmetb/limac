@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CFBundleDevelopmentRegion</key>
+	<string>en</string>
+	<key>CFBundleExecutable</key>
+	<string>Limac</string>
+	<!-- Matches the UserDefaults suite (Preferences.swift) and the
+	     LaunchAgent label (LoginItem.swift). Sparkle refuses to install an
+	     update whose bundle identifier changed, so this must never change. -->
+	<key>CFBundleIdentifier</key>
+	<string>dev.limac</string>
+	<key>CFBundleInfoDictionaryVersion</key>
+	<string>6.0</string>
+	<key>CFBundleName</key>
+	<string>Limac</string>
+	<key>CFBundlePackageType</key>
+	<string>APPL</string>
+	<!-- Placeholders; scripts/make-app.sh stamps the real version into the
+	     bundle's copy (CI passes the release tag). Sparkle compares the
+	     appcast's sparkle:version against the installed CFBundleVersion. -->
+	<key>CFBundleShortVersionString</key>
+	<string>0.0.0</string>
+	<key>CFBundleVersion</key>
+	<string>0.0.0</string>
+	<key>LSMinimumSystemVersion</key>
+	<string>14.0</string>
+	<key>LSUIElement</key>
+	<true/>
+	<key>NSPrincipalClass</key>
+	<string>NSApplication</string>
+	<key>SUEnableAutomaticChecks</key>
+	<true/>
+	<key>SUFeedURL</key>
+	<string>https://raw.githubusercontent.com/ahmetb/limac/main/appcast.xml</string>
+	<key>SUPublicEDKey</key>
+	<string>lYd+1s3yaMH77B9bhcnLihhNx/akstZ/Z6vj4I3NJ+A=</string>
+</dict>
+</plist>
