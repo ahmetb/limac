@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="img/logo.svg" width="128" alt="Limac logo — a lime slice">
+  <img src="img/logo.svg" width="128" alt="Limac logo, a lime slice">
   <h1>Limac</h1>
   <p><strong>Control your <a href="https://github.com/lima-vm/lima">Lima</a> VMs from the macOS menu bar.</strong></p>
   <p>
@@ -18,39 +18,28 @@ command you could type yourself.
 
 | VM list | VM controls |
 | :---: | :---: |
-| 📷 *coming soon* | 📷 *coming soon* |
+| *coming soon* | *coming soon* |
 <!--
 | <img src="img/vm-list.png" width="380" alt="The menu listing VMs with their status"> | <img src="img/vm-controls.png" width="380" alt="The controls for one VM"> |
 -->
 
 ## Features
 
-- **Glanceable state.** The icon is green when a VM is running, gray when
-  none are, and pulses while an operation is in flight.
-- **One-click control.** Start, stop, and restart each VM. Each menu entry
-  shows Lima's status and the configured CPUs, memory, and disk.
-- **Live updates.** State comes from `limactl watch` events, not polling.
-  Stop a VM from a terminal and the menu updates at once.
-- **Shell access.** Open a shell in Ghostty, iTerm2, WezTerm, Alacritty, or
+- See what's running at a glance. The icon is green when a VM is running and
+  gray when none are, and the menu updates the moment a VM changes, even one
+  you started from a terminal.
+- Start, stop, or restart a VM in one click.
+- Open a shell in your terminal: Ghostty, iTerm2, WezTerm, Alacritty, or
   Terminal.
-- **Kubernetes support.** Cluster VMs are marked in the menu. Launch a
-  terminal with `KUBECONFIG` set, or copy the kubeconfig path, env var, or a
-  `kubectl` command.
-- **Copy commands.** Ready-to-paste `limactl shell`, `ssh`, `scp`, and
-  `rsync` commands, plus the ssh-config and VM directory paths.
-- **Setup notes.** Lima's post-start message for each VM — for docker VMs,
-  the exact `docker context create` commands.
-- **Start at login.** Per VM through `limactl autostart`, and Limac itself as
-  a login item.
-- **Safety.** Destructive actions ask once. Protected VMs cannot be deleted.
-  Quitting Limac leaves your VMs running.
-- **Transparency.** Every menu item's tooltip shows the exact `limactl`
-  command it runs.
+- Use Kubernetes VMs right away: launch a `kubectl` terminal with
+  `KUBECONFIG` set, or copy the kubeconfig.
+- Smaller conveniences live in each VM's menu: copy `ssh` commands, read
+  Lima's setup notes, and start VMs at login.
 
 ## Installation
 
 There is no packaged release yet; build from source. You need macOS 14 or
-later, a Swift toolchain (Xcode 15+ or the Command Line Tools), and Lima 2.0
+later, a Swift toolchain (Xcode 15 or the Command Line Tools), and Lima 2.0
 or later on your `PATH` (`brew install lima`).
 
 ```sh
@@ -59,16 +48,16 @@ cd limac
 swift run
 ```
 
-A signed app bundle and a Homebrew cask are planned.
+A signed app bundle and a Homebrew cask will follow.
 
 ## Scope
 
-Limac is a minimal app to control your existing Lima VMs, so it does not aim
-for a full feature set. It does not create VMs, manage containers, or show
-data that `limactl` does not provide. Product and design docs live in
-[docs/](docs/).
+Limac is a minimal app to control the Lima VMs you already have, so don't
+expect a full feature set. It does not create VMs or manage containers, and
+if `limactl` doesn't report something, Limac doesn't show it. Product and
+design docs live in [docs/](docs/).
 
 ## License
 
-Limac is released under the [MIT License](LICENSE). It is an independent
-project, not affiliated with the Lima project.
+[MIT](LICENSE). Limac is an independent project, not affiliated with the
+Lima project.
