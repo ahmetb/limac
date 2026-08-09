@@ -14,14 +14,9 @@ Limac is a minimal, **menu bar-only** macOS app that lets you manage your
 sessions on them. Every action it takes is a `limactl` command you could type
 yourself.
 
-<!-- TODO: replace placeholders with real captures -->
-
 | VM list | VM controls |
 | :---: | :---: |
-| *coming soon* | *coming soon* |
-<!--
 | <img src="img/vm-list.png" width="380" alt="The menu listing VMs with their status"> | <img src="img/vm-controls.png" width="380" alt="The controls for one VM"> |
--->
 
 ## Installation
 
