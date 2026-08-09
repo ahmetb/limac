@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lime wedge — Noto conversion</title>
+<style>
+  :root{--bg:#fafaf7; --ink:#1c1e18; --muted:#6b6e63; --hair:#e5e5dd; --card:#fff;
+        --lime:#6f9a1f; --bar-light:#f2f2ef; --bar-dark:#161616}
+  *{box-sizing:border-box; margin:0; padding:0}
+  body{background:var(--bg); color:var(--ink);
+       font:15px/1.55 -apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",sans-serif;
+       -webkit-font-smoothing:antialiased; padding:44px 24px 80px}
+  .wrap{max-width:900px; margin:0 auto}
+  .eyebrow{font:600 11px/1 ui-monospace,"SF Mono",Menlo,monospace; letter-spacing:.14em;
+           text-transform:uppercase; color:var(--lime); margin-bottom:10px}
+  h1{font:600 28px/1.2 -apple-system,BlinkMacSystemFont,"SF Pro Display",sans-serif; letter-spacing:-.02em}
+  .lede{color:var(--muted); margin-top:8px; max-width:66ch}
+  .mapline{font:500 12px/1.8 ui-monospace,"SF Mono",Menlo,monospace; color:var(--muted); margin-top:12px}
+  .mapline b{color:var(--ink); font-weight:600}
+  .sw{display:inline-block; width:10px; height:10px; border-radius:3px; margin:0 5px -1px 0;
+      border:1px solid rgba(0,0,0,.12)}
+
+  .panel{background:var(--card); border:1px solid var(--hair); border-radius:14px; padding:18px; margin-top:26px}
+  .panel h2{font-size:15px; font-weight:600; margin-bottom:2px}
+  .panel .sub{font-size:12.5px; color:var(--muted); margin-bottom:14px}
+  .controls{display:grid; grid-template-columns:repeat(auto-fit,minmax(230px,1fr)); gap:18px 26px}
+  .ctl label{display:flex; justify-content:space-between; align-items:baseline;
+             font:500 12px/1 -apple-system,sans-serif; margin-bottom:8px}
+  .ctl label .val{font:600 12px/1 ui-monospace,"SF Mono",Menlo,monospace; color:var(--lime)}
+  .ctl .hint{font-size:11.5px; color:var(--muted); margin-top:7px}
+  input[type=range]{width:100%; accent-color:var(--lime)}
+  .presets{display:flex; gap:8px; margin-top:16px; flex-wrap:wrap; align-items:center}
+  .presets span{font:500 11.5px/1 -apple-system,sans-serif; color:var(--muted); margin-right:2px}
+  .chip{font:500 12px/1 -apple-system,sans-serif; color:var(--ink); background:#f1f1ec;
+        border:1px solid var(--hair); border-radius:999px; padding:6px 12px; cursor:pointer}
+  .chip:hover{background:#e9e9e2}
+  .chip.on{color:var(--lime); border-color:var(--lime); background:#fff}
+  .eff{font:500 11.5px/1.7 ui-monospace,"SF Mono",Menlo,monospace; color:var(--muted);
+       border-top:1px solid var(--hair); margin-top:16px; padding-top:12px}
+
+  .grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(270px,1fr)); gap:14px; margin-top:14px}
+  .card{background:var(--card); border:1px solid var(--hair); border-radius:14px; padding:18px;
+        display:flex; flex-direction:column; gap:12px}
+  .card h2{font-size:15px; font-weight:600}
+  .card p{font-size:12.5px; color:var(--muted)}
+  .stage{height:150px; display:flex; align-items:center; justify-content:center; border-radius:10px;
+    background:linear-gradient(45deg,#f6f6f2 25%,transparent 25%,transparent 75%,#f6f6f2 75%),
+               linear-gradient(45deg,#f6f6f2 25%,#fdfdfb 25%,#fdfdfb 75%,#f6f6f2 75%);
+    background-size:16px 16px; background-position:0 0,8px 8px; color:var(--ink)}
+  .stage svg{width:110px; height:110px}
+  .menubar{display:flex; align-items:center; justify-content:flex-end; gap:14px; height:30px;
+           padding:0 12px; border-radius:8px; border:1px solid var(--hair)}
+  .menubar.light{background:var(--bar-light); color:#111}
+  .menubar.dark{background:var(--bar-dark); color:#f4f4f4; border-color:#000; margin-top:6px}
+  .menubar svg{width:16px; height:16px; display:block}
+  .menubar .clock{font:500 11.5px/1 -apple-system,sans-serif; opacity:.9}
+  .btns{display:flex; gap:8px}
+  button{font:500 12px/1 -apple-system,sans-serif; color:var(--ink); background:#f1f1ec;
+         border:1px solid var(--hair); border-radius:7px; padding:7px 12px; cursor:pointer}
+  button:hover{background:#e9e9e2}
+  button:focus-visible{outline:2px solid var(--lime); outline-offset:2px}
+  button.done{color:var(--lime); border-color:var(--lime)}
+  details{border-top:1px solid var(--hair); padding-top:10px}
+  summary{font:500 12px/1 -apple-system,sans-serif; color:var(--muted); cursor:pointer}
+  pre{margin-top:10px; padding:12px; background:#f7f7f3; border:1px solid var(--hair); border-radius:8px;
+      font:10.5px/1.5 ui-monospace,"SF Mono",Menlo,monospace; overflow:auto; max-height:340px; color:#3a3d33}
+  .promptbox{display:flex; gap:12px; align-items:flex-start}
+  .promptbox pre{margin-top:0; flex:1; max-height:none; white-space:pre-wrap; font-size:12px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="eyebrow">icon proposal</div>
+  <h1>Lime wedge — Noto conversion.</h1>
+  <p class="lede">The Noto Emoji lime (U+1F34B ZWJ U+1F7E9), converted to a monochrome menu bar
+  template icon. Three source greens collapse to three transparency tiers of <code>currentColor</code>;
+  the four flesh segments keep the same lit / off state API as the current icon, and the busy wave
+  extends the 12-step table to 16 steps.</p>
+  <p class="mapline">
+    <span class="sw" style="background:#6EA517"></span>#6EA517 rind → <b>black</b> ·
+    <span class="sw" style="background:#B0E244"></span>#B0E244 flesh → <b>black</b> ·
+    <span class="sw" style="background:#F0F4C3"></span>#F0F4C3 cut face → <b>transparent</b>
+  </p>
+
+  <div class="panel">
+    <h2>Transparency</h2>
+    <p class="sub">The only tunable parameters — geometry is Noto's, untouched. Everything below updates live.</p>
+    <div class="controls">
+      <div class="ctl">
+        <label>Flesh alpha <span class="val" id="v-flesh">1.00</span></label>
+        <input type="range" id="in-flesh" min="0" max="1" step="0.01" value="1">
+        <div class="hint">Bright green tier: the four segments and the three rind pores.</div>
+      </div>
+      <div class="ctl">
+        <label>Cut-face alpha <span class="val" id="v-pith">0.00</span></label>
+        <input type="range" id="in-pith" min="0" max="0.35" step="0.01" value="0">
+        <div class="hint">Palest tier: the cut face and the juice streaks.</div>
+      </div>
+      <div class="ctl">
+        <label>Off-segment opacity <span class="val" id="v-off">0.24</span></label>
+        <input type="range" id="in-off" min="0" max="0.6" step="0.01" value="0.24">
+        <div class="hint">Multiplier a resting segment keeps, as in the current icon.</div>
+      </div>
+    </div>
+    <div class="presets" id="presets">
+      <span>Presets</span>
+      <button class="chip" data-p="1,0,0.24">Adopted</button>
+      <button class="chip" data-p="0.8,0.25,0.24">First pass</button>
+      <button class="chip" data-p="0.5,0.1,0.18">Conversion spec</button>
+    </div>
+    <div class="eff" id="eff"></div>
+  </div>
+
+  <div class="grid" id="cards"></div>
+
+  <div class="panel">
+    <h2>Prompt</h2>
+    <p class="sub">Paste back into Claude to lock the choice in.</p>
+    <div class="promptbox">
+      <pre id="prompt"></pre>
+      <button id="copy-prompt">Copy</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ---------- geometry (verbatim Noto paths; pore ellipses baked to arcs) ----------
+const D = {
+  // silhouette with cut face + 3 pores punched out (evenodd)
+  rind: "M22.5,14.8c2.9,1.3,99,44,99,44c2.7,1.2,2.9,3.1,2,12.4c-1,10.5-1.9,37.8-40.2,42.9c-24.6,3.2-55.9-4.3-70.9-27.2C-6,58.8,11,23.4,14.8,17.7C17.2,14.2,19.6,13.5,22.5,14.8z M121.5,58.8c-0.3-0.2-92-40.8-98.9-43.9C9.6,31.5-3.8,76,27.9,96.2C61.5,117.7,106.6,86,121.5,58.8z M90.33,101.57A3.4,2.3,-27.08,1,1,84.27,104.67A3.4,2.3,-27.08,1,1,90.33,101.57z M101.82,102.09A3.4,2.3,-30.65,1,1,95.96,105.55A3.4,2.3,-30.65,1,1,101.82,102.09z M104.73,91.75A3.4,2.3,-37.16,1,1,99.31,95.85A3.4,2.3,-37.16,1,1,104.73,91.75z",
+  face: "M121.5,58.8c-0.3-0.2-92-40.8-98.9-43.9C9.6,31.5-3.8,76,27.9,96.2C61.5,117.7,106.6,86,121.5,58.8z",
+  pores: [
+    "M90.33,101.57A3.4,2.3,-27.08,1,1,84.27,104.67A3.4,2.3,-27.08,1,1,90.33,101.57z",
+    "M101.82,102.09A3.4,2.3,-30.65,1,1,95.96,105.55A3.4,2.3,-30.65,1,1,101.82,102.09z",
+    "M104.73,91.75A3.4,2.3,-37.16,1,1,99.31,95.85A3.4,2.3,-37.16,1,1,104.73,91.75z"],
+  seg: {
+    p1: "M57.6,30.3c-8.3-3.7-24.4-10.7-29.6-13c-3.6,2.2-9.7,11.4-11.2,21.2c-0.6,3.6,1.7,5.9,5.3,4.9c0,0,33.7-9.3,35.3-9.7C59,33.2,59.4,31.1,57.6,30.3z",
+    p2: "M56.2,37.6L19.5,48.2c-2.5,0.8-4.4,2.8-5,5.3c-1.9,8.5,0.8,23.3,8.9,29.8c3.5,2.7,8.6,1.8,10.8-2.1L58.5,41C59.8,39.3,59,36.8,56.2,37.6z",
+    p3: "M61.9,42.4C60.3,45.1,39.5,81,37.6,84.1c-1.9,3.2-0.7,7.5,2.7,9.2c12.3,6.5,30.9,0.4,39.6-7c2.2-1.9,4.5-5.1,3.2-8.2S68.9,44.6,67.8,42.3C66.6,39.6,63.7,39.5,61.9,42.4z",
+    p4: "M70.5,40.5c0,0,14.6,30.1,16,33s6.3,4.7,9.9,2.8c10.7-5.6,15.5-12.4,19.2-20.2c-8.9-3.9-42.4-18.8-42.4-18.8C70.8,36.2,69.2,37.9,70.5,40.5z"},
+  streak: {
+    p2: "M52.2,42.2c-1.4,0.4-10.1,3-11.1,3.4c-1.4,0.5-2.2,1.7-1.9,2.5c0.3,0.9,1.7,1.1,3.1,0.6c0.8-0.3,7.1-3.9,9.5-5.2c-3.1,2.4-10.2,9.4-11.1,10.3c-1.4,1.5-1.7,3.4-0.8,4.3c1,0.9,2.9,0.5,4.3-1c1.2-1.3,8.5-12.8,9.1-13.9S53.7,41.8,52.2,42.2z",
+    p3: "M62.3,58.6c0-2.2,1.4-10.3,1.8-12.3c0.4-1.6,1.5-1.8,1.8,0.5s1.7,9.7,1.7,11.8s-1.2,3.3-2.7,3.3C63.5,61.9,62.3,60.8,62.3,58.6z",
+    p4: "M79.9,49c-1.2-1.8-3.3-4.9-4.1-6.1c-0.7-1.2,0.1-2.1,1.8-0.9c1.7,1.2,4,2.9,5.4,4c1.6,1.3,1.9,3,0.8,4S81.1,50.8,79.9,49z"}
+};
+</script>
+<script>
+// ---------- state ----------
+const DEF = {flesh: 1, pith: 0, off: 0.24}; // adopted 2026-08-09; earlier passes: 0.8/0.25/0.24, then 0.5/0.1/0.18
+const state = {...DEF};
+const f2 = x => (Math.round(x * 100) / 100).toFixed(2);
+const over = (bg, fg) => 1 - (1 - bg) * (1 - fg); // black-on-black alpha compositing
+
+// ---------- svg generation (matches Sources/Limac/Resources/lime-noto-*.svg at spec values) ----------
+function docComment(variantLine, s, isAnim) {
+  const lit = over(s.pith, s.flesh), off = over(s.pith, s.flesh * s.off), streak = over(lit, s.pith);
+  const stateApi = isAnim
+    ? `  STATE API: each flesh segment is a <g> whose opacity is driven by the
+  wave animation below (1 = lit, ${f2(s.off)} = off); its juice streak dims with
+  it. The art is pre-tilted (cut edge runs upper-left to right); fan
+  order: p1 = segment at the cut's upper-left corner, p2 = left,
+  p3 = bottom, p4 = right (at the cut's pointed right corner).
+  Tier alphas are overridable: "flesh" (${f2(s.flesh)}), "pith" (${f2(s.pith)}).`
+    : `  STATE API: each flesh segment is a <g> whose opacity comes from a CSS
+  custom property p1..p4 (1 = lit, ${f2(s.off)} = off); its juice streak dims
+  with it. The art is pre-tilted (cut edge runs upper-left to right); fan
+  order: p1 = segment at the cut's upper-left corner, p2 = left,
+  p3 = bottom, p4 = right (at the cut's pointed right corner).
+  Tier alphas are also overridable: "flesh" (${f2(s.flesh)}), "pith" (${f2(s.pith)}).`;
+  return `<!-- ============================================================
+  LIME WEDGE (Noto) : macOS menu bar template icon (128x128 viewBox)
+  Derived from Noto Emoji "lime" (U+1F34B U+200D U+1F7E9) color SVG.
+  Monochrome: everything uses currentColor; export black-on-transparent
+  and set isTemplate on the NSImage so macOS handles light/dark tinting.
+
+  NOTE: XML comments cannot contain a double hyphen, so CSS custom
+  properties are written here without their double-hyphen prefix
+  (p1 means the custom property named dash-dash-p1).
+
+  COLOR MAPPING (from the Noto source):
+    #6EA517 dark green   (rind)             : currentColor, alpha 1
+    #B0E244 bright green (flesh + 3 pores)  : currentColor, alpha ${f2(s.flesh)}  (var "flesh")
+    #F0F4C3 pale green   (cut face, juice)  : currentColor, alpha ${f2(s.pith)}  (var "pith")
+
+  STRUCTURE (why this file differs from the Noto original):
+    * Noto paints opaque layers on top of each other: full silhouette,
+      then cut face, then flesh. With translucent fills that stacking
+      composites wrong (10% over solid black stays black), so the rind
+      here is ONE evenodd path: the silhouette with the cut face and the
+      three rind pores punched out. The cut face is then painted at the
+      pith alpha and the pores at the flesh alpha. The pore ellipses'
+      rotate-matrix transforms are baked into arc segments.
+    * Noto has a second, slightly inset copy of the cut-face path (same
+      color, invisible there). Dropped here: at 10% alpha the duplicate
+      would read as a darker inset ring.
+    * Painting still stacks inside the wedge: flesh sits ON the cut face,
+      juice streaks ON the flesh. Effective composited alphas at these
+      values: lit flesh ${f2(lit)}, off flesh ${f2(off)}, streak-on-lit-flesh ${f2(streak)}.
+
+${stateApi}
+============================================================ -->
+${variantLine}`;
+}
+
+function waveCSS(s) {
+  // 16-step wave: segment n lit on steps n..n+3 and 13-n..16-n (420 ms/step)
+  const pct = i => +(i * 6.25).toFixed(2) + "%";
+  let css = `    /* 16-step wave, 420 ms per step (total 6.72s), step-end = hold each
+       state then jump. Four segments, same bounce as the 3-segment file:
+       0, 1, 1+2, 1+2+3, 1+2+3+4, 2+3+4, 3+4, 4, 0, 4, 3+4, 2+3+4,
+       1+2+3+4, 1+2+3, 1+2, 1, loop. One step = 6.25%. */
+    .lw1,.lw2,.lw3,.lw4{animation-duration:6.72s; animation-iteration-count:infinite; animation-timing-function:step-end}
+    .lw1{animation-name:lime-w1} .lw2{animation-name:lime-w2} .lw3{animation-name:lime-w3} .lw4{animation-name:lime-w4}\n`;
+  for (let n = 1; n <= 4; n++) {
+    const lit = i => (i >= n && i <= n + 3) || (i >= 13 - n && i <= 16 - n);
+    const frames = [];
+    for (let i = 0; i <= 16; i++) frames.push(`${pct(i)}{opacity:${lit(i) && i < 16 ? 1 : s.off}}`);
+    css += `    @keyframes lime-w${n}{${frames.join(" ")}}\n`;
+  }
+  css += `    @media (prefers-reduced-motion: reduce){.lw1,.lw2,.lw3,.lw4{animation:none}}`;
+  return css;
+}
+
+function segMarkup(k, stateAttr, s) {
+  const names = {p1: "segment along the cut's upper-left corner (no streak)",
+                 p2: "left segment, with its juice streak",
+                 p3: "bottom segment, with its juice streak",
+                 p4: "right segment, with its juice streak"};
+  const streak = D.streak[k]
+    ? `\n      <path style="fill-opacity:var(--pith,${s.pith})" d="${D.streak[k]}"/>` : "";
+  return `    <!-- flesh ${k}: ${names[k]} -->
+    <g ${stateAttr}>
+      <path style="fill-opacity:var(--flesh,${s.flesh})" d="${D.seg[k]}"/>${streak}
+    </g>`;
+}
+
+function svgFor(variant, s) {
+  const variantLine = {
+    full: `<!-- VARIANT: FULL, all four segments lit (override with p1..p4) -->`,
+    empty: `<!-- VARIANT: EMPTY, all four segments resting at ${f2(s.off)} (override with p1..p4) -->`,
+    anim: `<!-- VARIANT: ANIMATED, self-contained CSS wave (see step table in <style>).
+     For native ports: drive per-segment opacity through the same step table. -->`
+  }[variant];
+  const attr = k => variant === "full" ? `style="opacity:var(--${k},1)"`
+              : variant === "empty" ? `style="opacity:var(--${k},${s.off})"`
+              : `class="lw${k.slice(1)}" style="opacity:${s.off}"`;
+  const style = variant === "anim" ? `  <style>\n${waveCSS(s)}\n  </style>\n` : "";
+  const segs = ["p2", "p3", "p4", "p1"].map(k => segMarkup(k, attr(k), s)).join("\n");
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="16" height="16" fill="currentColor">
+${docComment(variantLine, s, variant === "anim")}
+${style}  <g fill="currentColor">
+    <!-- rind: silhouette minus cut face minus pores, one evenodd path -->
+    <path fill-rule="evenodd" d="${D.rind}"/>
+    <!-- cut face (pith) -->
+    <path style="fill-opacity:var(--pith,${s.pith})" d="${D.face}"/>
+    <!-- rind pores (bright-green tier, static) -->
+    <g style="fill-opacity:var(--flesh,${s.flesh})">
+${D.pores.map(p => `      <path d="${p}"/>`).join("\n")}
+    </g>
+${segs}
+  </g>
+</svg>
+`;
+}
+
+// the untouched Noto source, rebuilt from the same path constants
+const NOTO_SRC = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">
+  <path fill="#6EA517" d="${D.rind.split(" M")[0]}"/>
+  <path fill="#F0F4C3" d="${D.face}"/>
+  ${["p2","p4","p3"].map(k => `<path fill="#B0E244" d="${D.seg[k]}"/>`).join("\n  ")}
+  ${["p2","p3","p4"].map(k => `<path fill="#F0F4C3" d="${D.streak[k]}"/>`).join("\n  ")}
+  ${D.pores.map(p => `<path fill="#B0E244" d="${p}"/>`).join("\n  ")}
+  <path fill="#B0E244" d="${D.seg.p1}"/>
+</svg>`;
+
+// ---------- rendering ----------
+const CARDS = [
+  ["src", "Source — Noto lime", "The colored original, for reference. Rind, flesh and cut face are the three greens being mapped."],
+  ["full", "Full", "All four segments lit. Per-segment override via --p1…--p4; tier alphas via --flesh / --pith."],
+  ["empty", "Empty", "All segments resting at the off opacity. Same paths, same override API."],
+  ["anim", "Animated", "Self-contained CSS wave: 0 → 1 → 1+2 → 1+2+3 → 1+2+3+4 → 2+3+4 → 3+4 → 4 → 0 → back. 420 ms per step."]
+];
+const FILES = {full: "lime-noto-full.svg", empty: "lime-noto-empty.svg", anim: "lime-noto-animated.svg"};
+const wifi = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="width:14px;height:14px"><path d="M3 9.5a13.5 13.5 0 0 1 18 0"/><path d="M6.5 13a8.5 8.5 0 0 1 11 0"/><path d="M9.8 16.4a4 4 0 0 1 4.4 0"/><circle cx="12" cy="19.4" r="1" fill="currentColor" stroke="none"/></svg>`;
+const esc = t => t.replace(/&/g, "&amp;").replace(/</g, "&lt;");
+let current = {};
+
+function renderCards() {
+  current = {full: svgFor("full", state), empty: svgFor("empty", state), anim: svgFor("anim", state)};
+  document.getElementById("cards").innerHTML = CARDS.map(([k, name, blurb]) => {
+    const art = k === "src" ? NOTO_SRC : current[k];
+    const extras = k === "src" ? "" : `
+    <div>
+      <div class="menubar light">${art}${wifi}<span class="clock">Sat 9:41 AM</span></div>
+      <div class="menubar dark">${art}${wifi}<span class="clock">Sat 9:41 AM</span></div>
+    </div>
+    <div class="btns">
+      <button data-copy="${k}">Copy SVG</button>
+      <button data-dl="${k}">Download</button>
+    </div>
+    <details><summary>view source (with inline docs)</summary><pre>${esc(art)}</pre></details>`;
+    return `<div class="card"><h2>${name}</h2><p>${blurb}</p><div class="stage">${art}</div>${extras}</div>`;
+  }).join("");
+
+  document.querySelectorAll("[data-copy]").forEach(b => b.addEventListener("click", async () => {
+    try { await navigator.clipboard.writeText(current[b.dataset.copy]); }
+    catch { const t = document.createElement("textarea"); t.value = current[b.dataset.copy];
+            document.body.appendChild(t); t.select(); document.execCommand("copy"); t.remove(); }
+    b.textContent = "Copied"; b.classList.add("done");
+    setTimeout(() => { b.textContent = "Copy SVG"; b.classList.remove("done"); }, 1400);
+  }));
+  document.querySelectorAll("[data-dl]").forEach(b => b.addEventListener("click", () => {
+    const blob = new Blob([current[b.dataset.dl]], {type: "image/svg+xml"});
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob); a.download = FILES[b.dataset.dl];
+    a.click(); URL.revokeObjectURL(a.href);
+  }));
+}
+
+function renderEff() {
+  const lit = over(state.pith, state.flesh);
+  const off = over(state.pith, state.flesh * state.off);
+  document.getElementById("eff").textContent =
+    `effective ink on transparent — rind 1.00 · lit segment ${f2(lit)} · off segment ${f2(off)} · cut face ${f2(state.pith)} · pores ${f2(state.flesh)}`;
+}
+
+function renderPrompt() {
+  const changes = [];
+  if (state.flesh !== DEF.flesh) changes.push(`flesh alpha ${f2(state.flesh)} (spec was ${f2(DEF.flesh)})`);
+  if (state.pith !== DEF.pith) changes.push(`cut-face alpha ${f2(state.pith)} (spec was ${f2(DEF.pith)})`);
+  if (state.off !== DEF.off) changes.push(`off-segment opacity ${f2(state.off)} (spec was ${f2(DEF.off)})`);
+  document.getElementById("prompt").textContent = changes.length === 0
+    ? `Keep the Limac menu bar icon as generated: rind black, flesh ${Math.round(DEF.flesh * 100)}% black, cut face ${Math.round(DEF.pith * 100)}% black, off segments at ${f2(DEF.off)} opacity. The lime-noto-*.svg files in Sources/Limac/Resources and LimeIcon.swift already carry these values.`
+    : `Regenerate the lime-noto-*.svg assets in Sources/Limac/Resources with ${changes.join(", ")}, and update the alpha constants in LimeIcon.swift to match.`;
+}
+
+function updateAll() {
+  document.getElementById("v-flesh").textContent = f2(state.flesh);
+  document.getElementById("v-pith").textContent = f2(state.pith);
+  document.getElementById("v-off").textContent = f2(state.off);
+  document.querySelectorAll(".chip").forEach(c => {
+    const [f, p, o] = c.dataset.p.split(",").map(Number);
+    c.classList.toggle("on", f === state.flesh && p === state.pith && o === state.off);
+  });
+  renderCards(); renderEff(); renderPrompt();
+}
+
+for (const [id, key] of [["in-flesh", "flesh"], ["in-pith", "pith"], ["in-off", "off"]]) {
+  document.getElementById(id).addEventListener("input", e => {
+    state[key] = Number(e.target.value); updateAll();
+  });
+}
+document.querySelectorAll(".chip").forEach(c => c.addEventListener("click", () => {
+  const [f, p, o] = c.dataset.p.split(",").map(Number);
+  state.flesh = f; state.pith = p; state.off = o;
+  document.getElementById("in-flesh").value = f;
+  document.getElementById("in-pith").value = p;
+  document.getElementById("in-off").value = o;
+  updateAll();
+}));
+document.getElementById("copy-prompt").addEventListener("click", async function () {
+  const t = document.getElementById("prompt").textContent;
+  try { await navigator.clipboard.writeText(t); }
+  catch { const x = document.createElement("textarea"); x.value = t;
+          document.body.appendChild(x); x.select(); document.execCommand("copy"); x.remove(); }
+  this.textContent = "Copied"; this.classList.add("done");
+  setTimeout(() => { this.textContent = "Copy"; this.classList.remove("done"); }, 1400);
+});
+
+updateAll();
+</script>
+</body>
+</html>

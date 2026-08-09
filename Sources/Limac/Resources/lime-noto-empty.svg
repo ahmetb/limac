@@ -1,0 +1,71 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="16" height="16" fill="currentColor">
+<!-- ============================================================
+  LIME WEDGE (Noto) : macOS menu bar template icon (128x128 viewBox)
+  Derived from Noto Emoji "lime" (U+1F34B U+200D U+1F7E9) color SVG.
+  Monochrome: everything uses currentColor; export black-on-transparent
+  and set isTemplate on the NSImage so macOS handles light/dark tinting.
+
+  NOTE: XML comments cannot contain a double hyphen, so CSS custom
+  properties are written here without their double-hyphen prefix
+  (p1 means the custom property named dash-dash-p1).
+
+  COLOR MAPPING (from the Noto source):
+    #6EA517 dark green   (rind)             : currentColor, alpha 1
+    #B0E244 bright green (flesh + 3 pores)  : currentColor, alpha 1.00  (var "flesh")
+    #F0F4C3 pale green   (cut face, juice)  : currentColor, alpha 0.00  (var "pith")
+
+  STRUCTURE (why this file differs from the Noto original):
+    * Noto paints opaque layers on top of each other: full silhouette,
+      then cut face, then flesh. With translucent fills that stacking
+      composites wrong (10% over solid black stays black), so the rind
+      here is ONE evenodd path: the silhouette with the cut face and the
+      three rind pores punched out. The cut face is then painted at the
+      pith alpha and the pores at the flesh alpha. The pore ellipses'
+      rotate-matrix transforms are baked into arc segments.
+    * Noto has a second, slightly inset copy of the cut-face path (same
+      color, invisible there). Dropped here: at 10% alpha the duplicate
+      would read as a darker inset ring.
+    * Painting still stacks inside the wedge: flesh sits ON the cut face,
+      juice streaks ON the flesh. Effective composited alphas at these
+      values: lit flesh 1.00, off flesh 0.24, streak-on-lit-flesh 1.00.
+
+  STATE API: each flesh segment is a <g> whose opacity comes from a CSS
+  custom property p1..p4 (1 = lit, 0.24 = off); its juice streak dims
+  with it. The art is pre-tilted (cut edge runs upper-left to right); fan
+  order: p1 = segment at the cut's upper-left corner, p2 = left,
+  p3 = bottom, p4 = right (at the cut's pointed right corner).
+  Tier alphas are also overridable: "flesh" (1.00), "pith" (0.00).
+============================================================ -->
+<!-- VARIANT: EMPTY, all four segments resting at 0.24 (override with p1..p4) -->
+  <g fill="currentColor">
+    <!-- rind: silhouette minus cut face minus pores, one evenodd path -->
+    <path fill-rule="evenodd" d="M22.5,14.8c2.9,1.3,99,44,99,44c2.7,1.2,2.9,3.1,2,12.4c-1,10.5-1.9,37.8-40.2,42.9c-24.6,3.2-55.9-4.3-70.9-27.2C-6,58.8,11,23.4,14.8,17.7C17.2,14.2,19.6,13.5,22.5,14.8z M121.5,58.8c-0.3-0.2-92-40.8-98.9-43.9C9.6,31.5-3.8,76,27.9,96.2C61.5,117.7,106.6,86,121.5,58.8z M90.33,101.57A3.4,2.3,-27.08,1,1,84.27,104.67A3.4,2.3,-27.08,1,1,90.33,101.57z M101.82,102.09A3.4,2.3,-30.65,1,1,95.96,105.55A3.4,2.3,-30.65,1,1,101.82,102.09z M104.73,91.75A3.4,2.3,-37.16,1,1,99.31,95.85A3.4,2.3,-37.16,1,1,104.73,91.75z"/>
+    <!-- cut face (pith) -->
+    <path style="fill-opacity:var(--pith,0)" d="M121.5,58.8c-0.3-0.2-92-40.8-98.9-43.9C9.6,31.5-3.8,76,27.9,96.2C61.5,117.7,106.6,86,121.5,58.8z"/>
+    <!-- rind pores (bright-green tier, static) -->
+    <g style="fill-opacity:var(--flesh,1)">
+      <path d="M90.33,101.57A3.4,2.3,-27.08,1,1,84.27,104.67A3.4,2.3,-27.08,1,1,90.33,101.57z"/>
+      <path d="M101.82,102.09A3.4,2.3,-30.65,1,1,95.96,105.55A3.4,2.3,-30.65,1,1,101.82,102.09z"/>
+      <path d="M104.73,91.75A3.4,2.3,-37.16,1,1,99.31,95.85A3.4,2.3,-37.16,1,1,104.73,91.75z"/>
+    </g>
+    <!-- flesh p2: left segment, with its juice streak -->
+    <g style="opacity:var(--p2,0.24)">
+      <path style="fill-opacity:var(--flesh,1)" d="M56.2,37.6L19.5,48.2c-2.5,0.8-4.4,2.8-5,5.3c-1.9,8.5,0.8,23.3,8.9,29.8c3.5,2.7,8.6,1.8,10.8-2.1L58.5,41C59.8,39.3,59,36.8,56.2,37.6z"/>
+      <path style="fill-opacity:var(--pith,0)" d="M52.2,42.2c-1.4,0.4-10.1,3-11.1,3.4c-1.4,0.5-2.2,1.7-1.9,2.5c0.3,0.9,1.7,1.1,3.1,0.6c0.8-0.3,7.1-3.9,9.5-5.2c-3.1,2.4-10.2,9.4-11.1,10.3c-1.4,1.5-1.7,3.4-0.8,4.3c1,0.9,2.9,0.5,4.3-1c1.2-1.3,8.5-12.8,9.1-13.9S53.7,41.8,52.2,42.2z"/>
+    </g>
+    <!-- flesh p3: bottom segment, with its juice streak -->
+    <g style="opacity:var(--p3,0.24)">
+      <path style="fill-opacity:var(--flesh,1)" d="M61.9,42.4C60.3,45.1,39.5,81,37.6,84.1c-1.9,3.2-0.7,7.5,2.7,9.2c12.3,6.5,30.9,0.4,39.6-7c2.2-1.9,4.5-5.1,3.2-8.2S68.9,44.6,67.8,42.3C66.6,39.6,63.7,39.5,61.9,42.4z"/>
+      <path style="fill-opacity:var(--pith,0)" d="M62.3,58.6c0-2.2,1.4-10.3,1.8-12.3c0.4-1.6,1.5-1.8,1.8,0.5s1.7,9.7,1.7,11.8s-1.2,3.3-2.7,3.3C63.5,61.9,62.3,60.8,62.3,58.6z"/>
+    </g>
+    <!-- flesh p4: right segment, with its juice streak -->
+    <g style="opacity:var(--p4,0.24)">
+      <path style="fill-opacity:var(--flesh,1)" d="M70.5,40.5c0,0,14.6,30.1,16,33s6.3,4.7,9.9,2.8c10.7-5.6,15.5-12.4,19.2-20.2c-8.9-3.9-42.4-18.8-42.4-18.8C70.8,36.2,69.2,37.9,70.5,40.5z"/>
+      <path style="fill-opacity:var(--pith,0)" d="M79.9,49c-1.2-1.8-3.3-4.9-4.1-6.1c-0.7-1.2,0.1-2.1,1.8-0.9c1.7,1.2,4,2.9,5.4,4c1.6,1.3,1.9,3,0.8,4S81.1,50.8,79.9,49z"/>
+    </g>
+    <!-- flesh p1: segment along the cut's upper-left corner (no streak) -->
+    <g style="opacity:var(--p1,0.24)">
+      <path style="fill-opacity:var(--flesh,1)" d="M57.6,30.3c-8.3-3.7-24.4-10.7-29.6-13c-3.6,2.2-9.7,11.4-11.2,21.2c-0.6,3.6,1.7,5.9,5.3,4.9c0,0,33.7-9.3,35.3-9.7C59,33.2,59.4,31.1,57.6,30.3z"/>
+    </g>
+  </g>
+</svg>

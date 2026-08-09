@@ -16,12 +16,19 @@ let package = Package(
                 .product(name: "Sparkle", package: "Sparkle")
             ],
             path: "Sources/Limac",
-            // The HTML preview stays in the repo but out of the app bundle.
-            exclude: ["Resources/lime-assets.html"],
+            // The HTML previews stay in the repo but out of the app bundle,
+            // as do the retired 3-segment lime assets.
+            exclude: [
+                "Resources/lime-assets.html",
+                "Resources/lime-noto-assets.html",
+                "Resources/lime-full.svg",
+                "Resources/lime-empty.svg",
+                "Resources/lime-animated.svg"
+            ],
             resources: [
-                .copy("Resources/lime-full.svg"),
-                .copy("Resources/lime-empty.svg"),
-                .copy("Resources/lime-animated.svg")
+                .copy("Resources/lime-noto-full.svg"),
+                .copy("Resources/lime-noto-empty.svg"),
+                .copy("Resources/lime-noto-animated.svg")
             ],
             linkerSettings: [
                 // Finds Sparkle at Contents/Frameworks inside Limac.app.
