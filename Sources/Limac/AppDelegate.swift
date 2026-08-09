@@ -402,8 +402,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         // flight (double-submit protection). The troubleshoot verbs below
         // stay live — they're the way out of a hung start, and limactl
         // itself accepts them in any state (verified: factory-reset works
-        // mid-start; delete refuses with a clear error until Stopped, which
-        // Limac surfaces verbatim).
+        // mid-start; delete requires Stopped, which deleteInstance explains
+        // before running anything).
         @discardableResult
         func add(_ title: String, _ action: Selector, symbol: String? = nil,
                  tooltip: String? = nil, enabled: Bool = true,
@@ -512,10 +512,16 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
 
         submenu.addItem(.separator())
 
+        let deleteTooltip: String
+        if instance.isProtected {
+            deleteTooltip = "Protected in Lima (limactl protect); unprotect to delete"
+        } else if instance.isRunning {
+            deleteTooltip = "Stop the VM first; limactl delete requires it stopped"
+        } else {
+            deleteTooltip = "limactl delete \(name)"
+        }
         add("Delete…", #selector(deleteInstance(_:)), symbol: "trash",
-            tooltip: instance.isProtected
-                ? "Protected in Lima (limactl protect); unprotect to delete"
-                : "limactl delete \(name)",
+            tooltip: deleteTooltip,
             enabled: !instance.isProtected)
         let protectItem = add(
             "Protect from Deletion", #selector(toggleProtection(_:)), symbol: "lock",
@@ -609,6 +615,19 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     @objc private func deleteInstance(_ sender: NSMenuItem) {
         guard let name = sender.representedObject as? String,
               let instance = instances.first(where: { $0.name == name }) else { return }
+        if instance.isRunning {
+            // limactl delete only accepts Stopped instances; rather than
+            // relaying its fatal error, say up front what to do.
+            NSApp.activate(ignoringOtherApps: true)
+            let alert = NSAlert()
+            alert.alertStyle = .informational
+            alert.messageText = "“\(name)” is still running"
+            alert.informativeText = "Stop the VM before deleting it — "
+                + "`limactl delete` only works on stopped VMs."
+            alert.addButton(withTitle: "OK")
+            alert.runModal()
+            return
+        }
         let diskNote = instance.disk.map { " and its \(Instance.formatBytes($0)) disk" } ?? ""
         let alert = destructiveAlert(
             title: "Delete “\(name)”?",
