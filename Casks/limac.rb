@@ -21,11 +21,18 @@ cask "limac" do
   app "Limac.app"
 
   caveats <<~EOS
-    Limac is not signed with an Apple Developer ID certificate. If macOS
-    blocks the first launch, right-click Limac.app and choose Open; on
-    macOS 15 or newer, also approve it under System Settings -> Privacy &
-    Security -> "Open Anyway". Updates installed by the app itself do not
-    re-trigger this warning.
+    Limac is not signed with an Apple Developer ID certificate.
+    macOS may block the first launch. Clear the quarantine flag:
+
+      xattr -dr com.apple.quarantine /Applications/Limac.app
+
+    Or approve it by hand:
+      - Right-click Limac.app and choose Open.
+      - Click Open in the security dialog.
+      - On macOS 15 or newer, also allow it under System Settings ->
+        Privacy & Security -> "Open Anyway".
+
+    Updates installed by the app itself do not re-trigger this warning.
   EOS
 
   zap trash: [

@@ -23,6 +23,37 @@ yourself.
 | <img src="img/vm-list.png" width="380" alt="The menu listing VMs with their status"> | <img src="img/vm-controls.png" width="380" alt="The controls for one VM"> |
 -->
 
+## Installation
+
+You need macOS 14 or later and Lima 2.0 or later on your `PATH`
+(`brew install lima`).
+
+```sh
+brew tap ahmetb/limac https://github.com/ahmetb/limac
+brew install --cask limac
+```
+
+Or grab `Limac-vX.Y.Z.zip` from the
+[releases page](https://github.com/ahmetb/limac/releases).
+
+> [!WARNING]
+> The app is not signed with an Apple Developer ID certificate, so macOS may
+> block the first launch. Clear the quarantine flag:
+>
+> ```sh
+> xattr -dr com.apple.quarantine /Applications/Limac.app
+> ```
+>
+> Or approve it by hand:
+>
+> - Right-click Limac.app and choose Open.
+> - Click Open in the security dialog.
+> - On macOS 15 or newer, also allow it under System Settings → Privacy &
+>   Security.
+>
+> The app checks for updates daily and installs them in place; those updates
+> don't re-trigger the warning.
+
 ## Features
 
 - See what's running at a glance. The icon is green when a VM is running and
@@ -36,26 +67,10 @@ yourself.
 - Smaller conveniences live in each VM's menu: copy `ssh` commands, read
   Lima's setup notes, and start VMs at login.
 
-## Installation
+## Local Development
 
-You need macOS 14 or later and Lima 2.0 or later on your `PATH`
-(`brew install lima`).
-
-```sh
-brew tap ahmetb/limac https://github.com/ahmetb/limac
-brew install --cask limac
-```
-
-Or grab `Limac-vX.Y.Z.zip` from the
-[releases page](https://github.com/ahmetb/limac/releases). The app is not
-signed with an Apple Developer ID certificate, so if macOS blocks the first
-launch, right-click Limac.app and choose Open (on macOS 15 or newer, also
-approve it under System Settings → Privacy & Security). The app checks for
-updates daily and installs them in place; those updates don't re-trigger
-the warning.
-
-To build from source instead, install a Swift toolchain (Xcode 15 or the
-Command Line Tools) and:
+To build from source, install a Swift toolchain (Xcode 15 or the Command Line
+Tools) and:
 
 ```sh
 git clone https://github.com/ahmetb/limac
