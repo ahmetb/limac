@@ -6,16 +6,16 @@
     <description>Most recent Limac release</description>
     <language>en</language>
     <item>
-      <title>Limac 0.1.0</title>
-      <link>https://github.com/ahmetb/limac/releases/tag/v0.1.0</link>
-      <sparkle:fullReleaseNotesLink>https://github.com/ahmetb/limac/releases/tag/v0.1.0</sparkle:fullReleaseNotesLink>
-      <sparkle:version>0.1.0</sparkle:version>
-      <sparkle:shortVersionString>0.1.0</sparkle:shortVersionString>
+      <title>Limac 0.1.1</title>
+      <link>https://github.com/ahmetb/limac/releases/tag/v0.1.1</link>
+      <sparkle:fullReleaseNotesLink>https://github.com/ahmetb/limac/releases/tag/v0.1.1</sparkle:fullReleaseNotesLink>
+      <sparkle:version>0.1.1</sparkle:version>
+      <sparkle:shortVersionString>0.1.1</sparkle:shortVersionString>
       <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
-      <pubDate>Sun, 09 Aug 2026 19:53:13 +0000</pubDate>
+      <pubDate>Sun, 09 Aug 2026 20:42:48 +0000</pubDate>
       <enclosure
-        url="https://github.com/ahmetb/limac/releases/download/v0.1.0/Limac-v0.1.0.zip"
-        sparkle:edSignature="eNoUTOG9UmtlSRIG3uwBKSncarD/6FCHqW6E8LB7QfPcWBWey2ntpkPWbh1aV+iVs9hfNFClF+5Pjjd8s+HECQ==" length="1262118"
+        url="https://github.com/ahmetb/limac/releases/download/v0.1.1/Limac-v0.1.1.zip"
+        sparkle:edSignature="OBVvEGlILyLBoQ9ESOGxr/PLxKChotvOVoNV9/4KDrsDj1DV6Vh23/uaWXiJyn58ulWhc8mhlCPzHJSt4grcAA==" length="1274745"
         type="application/octet-stream"/>
     </item>
   </channel>
