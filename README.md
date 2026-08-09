@@ -9,10 +9,10 @@
   </p>
 </div>
 
-Glance at the menu bar to see which VMs are running. Click to start, stop, or
-open a shell. Limac wraps `limactl` and nothing else: a VM you start from the
-terminal appears in the menu, and every action Limac takes is a `limactl`
-command you could type yourself.
+Limac is a minimal, **menu bar-only** macOS app that lets you manage your
+[Lima](https://github.com/lima-vm/lima) VMs and launch terminal or `kubectl`
+sessions on them. Every action it takes is a `limactl` command you could type
+yourself.
 
 <!-- TODO: replace placeholders with real captures -->
 
