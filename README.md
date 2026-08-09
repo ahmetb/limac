@@ -51,8 +51,8 @@ Or grab `Limac-vX.Y.Z.zip` from the
 
 ## Features
 
-- See what's running at a glance. The icon is green when a VM is running and
-  gray when none are, and the menu updates the moment a VM changes, even one
+- See what's running at a glance. The lime is full when a VM is running and
+  faded when none are, and the menu updates the moment a VM changes, even one
   you started from a terminal.
 - Start, stop, or restart a VM in one click.
 - Open a shell in your terminal: Ghostty, iTerm2, WezTerm, Alacritty, or
@@ -84,3 +84,9 @@ design docs live in [docs/](docs/).
 
 [MIT](LICENSE). Limac is an independent project, not affiliated with the
 Lima project.
+
+The lime artwork (the logo above and the menu bar icon) is the lime emoji
+from [Noto Emoji](https://github.com/googlefonts/noto-emoji), © Google,
+used under the
+[Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0). The menu
+bar icon is a monochrome adaptation of it.
