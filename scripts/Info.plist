@@ -6,6 +6,8 @@
 	<string>en</string>
 	<key>CFBundleExecutable</key>
 	<string>Limac</string>
+	<key>CFBundleIconFile</key>
+	<string>AppIcon</string>
 	<!-- Matches the UserDefaults suite (Preferences.swift) and the
 	     LaunchAgent label (LoginItem.swift). Sparkle refuses to install an
 	     update whose bundle identifier changed, so this must never change. -->

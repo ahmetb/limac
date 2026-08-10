@@ -21,6 +21,7 @@ mkdir -p "$APP/Contents/MacOS" "$APP/Contents/Resources" "$APP/Contents/Framewor
 
 cp "$BIN_DIR/Limac" "$APP/Contents/MacOS/Limac"
 cp -R "$BIN_DIR/Limac_Limac.bundle" "$APP/Contents/Resources/"
+cp img/AppIcon.icns "$APP/Contents/Resources/AppIcon.icns"  # regenerate: scripts/make-icon.sh
 cp scripts/Info.plist "$APP/Contents/Info.plist"
 printf 'APPL????' > "$APP/Contents/PkgInfo"
 
