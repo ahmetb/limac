@@ -9,15 +9,14 @@ cd "$(dirname "$0")/.."
 TMP="$(mktemp -d)"
 trap 'rm -rf "$TMP"' EXIT
 
-# Center the artwork on the 824pt circle of Apple's 1024pt icon grid, so the
-# lime sits at the same visual size as neighboring squircle icons.
+# Render the full icon canvas. logo.svg is already a complete 1024pt icon:
+# the rounded-box gradient background plus the lime at 85% of the box width.
 cat > "$TMP/render.swift" <<'EOF'
 import AppKit
 
 let svgPath = CommandLine.arguments[1]
 let outPath = CommandLine.arguments[2]
 let canvas = 1024
-let artwork = 824
 
 guard let svg = NSImage(contentsOfFile: svgPath) else {
     fputs("cannot load \(svgPath)\n", stderr); exit(1)
@@ -28,8 +27,7 @@ guard let rep = NSBitmapImageRep(bitmapDataPlanes: nil, pixelsWide: canvas, pixe
                                  bytesPerRow: 0, bitsPerPixel: 0) else { exit(1) }
 NSGraphicsContext.saveGraphicsState()
 NSGraphicsContext.current = NSGraphicsContext(bitmapImageRep: rep)
-let inset = CGFloat(canvas - artwork) / 2
-svg.draw(in: NSRect(x: inset, y: inset, width: CGFloat(artwork), height: CGFloat(artwork)),
+svg.draw(in: NSRect(x: 0, y: 0, width: CGFloat(canvas), height: CGFloat(canvas)),
          from: .zero, operation: .sourceOver, fraction: 1.0)
 NSGraphicsContext.restoreGraphicsState()
 guard let png = rep.representation(using: .png, properties: [:]) else { exit(1) }
