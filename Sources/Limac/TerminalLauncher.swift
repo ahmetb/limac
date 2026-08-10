@@ -3,8 +3,12 @@ import AppKit
 /// Opens commands in the user's preferred terminal.
 enum TerminalLauncher {
     static func openShell(limactlPath: String, instanceName: String) {
+        // env is interposed because Ghostty wraps exec commands in
+        // `login(1)`, which rewrites argv[0] to the bare basename; limactl
+        // locates its share/lima via argv[0] and warns when that bare name
+        // isn't on the GUI PATH. env re-execs with the absolute path intact.
         launch(shellCommand: "\(shellQuote(limactlPath)) shell \(shellQuote(instanceName))",
-               execArgv: [limactlPath, "shell", instanceName])
+               execArgv: ["/usr/bin/env", limactlPath, "shell", instanceName])
     }
 
     /// Opens a host shell aimed at a Kubernetes instance: KUBECONFIG is
