@@ -1,8 +1,8 @@
 # Stamped by .github/workflows/release.yml on every tagged release; inert
 # placeholders until the first tag.
 cask "limac" do
-  version "0.1.1"
-  sha256 "798caace18b7394cb4702e3ab0c203399e9004956fd41de093c5e40350fdba77"
+  version "0.1.2"
+  sha256 "11d71b9e79fe8955deff300a74117fe29c12790e99a7945d055f9242da0848de"
 
   url "https://github.com/ahmetb/limac/releases/download/v#{version}/Limac-v#{version}.zip"
   name "Limac"
