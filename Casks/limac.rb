@@ -16,7 +16,7 @@ cask "limac" do
 
   # The app updates itself via Sparkle; brew upgrade skips it unless --greedy.
   auto_updates true
-  depends_on macos: ">= :sonoma"
+  depends_on macos: :sonoma
 
   app "Limac.app"
 
